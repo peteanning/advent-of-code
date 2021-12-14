@@ -21,7 +21,7 @@ main = hspec $ do
     it "Convert One to 1" $ do
       bin2Int One `shouldBe` 1
 
-    it "Converts a count of the occurrance of Binary Ones and a number of words that produced the count and computes the Winner Zero or One in as a 5 bit binary word" $ do
+    it "Converts a count of the occurrance of Binary Ones and computes the winner based on the number of words the count is based on " $ do
         countToWord 2 [2,2] `shouldBe` [One, One]
         countToWord 2 [1,2] `shouldBe` [Zero , One]
         countToWord 12 [5,7] `shouldBe` [Zero , One]
