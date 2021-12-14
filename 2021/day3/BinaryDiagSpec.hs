@@ -33,7 +33,7 @@ main = hspec $ do
     it "Count the occurance of the most common bit in each position of a Binary Word" $ do
         countOnes [[One,Zero], [One, Zero], [One, One], [One, Zero]] `shouldBe` [One,Zero]
 
-    it "Convert a Binary Array of [One, Zero, One, Zero, One] to decimal 22" $ do
+    it "Convert a Binary Array of [One, Zero, One, One, Zero] to decimal 22" $ do
        binaryArrayToInt [One, Zero, One, One, Zero ] `shouldBe` 22
 
     it "Bitflip a Binary Array so One becomes Zero and Zero becomes One in [One, Zero] => [Zero, One]" $ do
