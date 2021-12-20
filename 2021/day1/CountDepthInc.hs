@@ -1,4 +1,5 @@
 module CountDepthInc where
+
 getIncreases :: [Int] -> Int -> Int
 getIncreases [] _ = 0
 getIncreases [n] _ = 0
