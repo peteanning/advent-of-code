@@ -27,9 +27,9 @@ main :: IO ()
 main = hspec $ do
   describe "Bingo Tests" $ do
     it "fail to load a file that does not exist" $ do
-      loadsetup "non-existent.txt" `shouldThrow` anyException   
+      playGameFromFile "non-existent.txt" `shouldThrow` anyException   
     it "load a setup file" $ do
-      loadsetup "test.txt" `shouldReturn` testFile
+      playGameFromFile "test.txt" `shouldReturn` testFile
     it "should split a coma delimited string into an Int array" $ do
       split ',' testDraw `shouldBe` testDrawStrArray
     it "should split a coma delimited string into an Int array" $ do
