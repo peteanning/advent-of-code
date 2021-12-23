@@ -1,4 +1,3 @@
-{-# OPTIONS_GHC -Wno-deferred-out-of-scope-variables #-}
 module Bingo where
 
 import Data.List (find, transpose)
@@ -6,62 +5,62 @@ import qualified Data.Maybe
 
 type SetupFile = String
 type Pos = Int
-type Game = [(Int, Pos)]
-type BingoCard = [[Int]]
-type ScoredCard = [[(Int, Pos)]]
+type Draw = [(Int, Pos)]
+type Board = [[Int]]
+type ScoredBoard = [[(Int, Pos)]]
 
 split :: Char -> String -> [String]
 split d "" = []
 split d xs = x : split d (drop 1 y)
              where (x,y) = span (/= d) xs
 
-game :: String -> [(Int,Pos)]
-game "" = []
-game s = zip (map read (split  ',' s) :: [Int]) [1..]
+parseDraw :: String -> Draw
+parseDraw "" = []
+parseDraw s = zip (map read (split  ',' s) :: [Int]) [1..]
 
-card :: [String] -> BingoCards
-card (b:r1:r2:r3:r4:r5:rs) = (map (map read . filter (/= "") . split ' ') [r1, r2, r3, r4, r5] :: [[Int]])  : card rs
-card _ = []
+parseBoards :: [String] -> Boards
+parseBoards (b:r1:r2:r3:r4:r5:rs) = (map (map read . filter (/= "") . split ' ') [r1, r2, r3, r4, r5] :: [[Int]])  : parseBoards rs
+parseBoards _ = []
 
 -- the main function that plays the game
 play :: SetupFile -> Int
 play gameFile = let x = lines gameFile :: [String]
-                    (gameRow,cards) = (head x, tail x)
-                    g = game gameRow
-                    bingoCards = card  cards -- parse all the cards
+                    (gameRow, boards) = (head x, tail x)
+                    g = parseDraw gameRow
+                    bingoBoards = parseBoards  boards 
                     _play drawNumber = if any isComplete sg then
                                           scoreWinner (findWinner sg) (g !! (drawNumber -1))
                                       --    findWinner sg
                                        else
                                          _play (drawNumber + 1)
                                        where
-                                          sg = scoreGame bingoCards (take drawNumber g)
+                                          sg = scoreDraw bingoBoards (take drawNumber g)
                    in  _play 5 -- remember we can only win with 5 or more numbers
 
 -- sum of all unmarked numbers * the last number drawn
-scoreWinner :: ScoredCard -> (Int, Pos) -> Int
-scoreWinner scoredCard (n,p) = n * sum (map (\(x,y) -> if y == 0 then x else 0) (concat scoredCard))
+scoreWinner :: ScoredBoard -> (Int, Pos) -> Int
+scoreWinner scoredBoards (n,p) = n * sum (map (\(x,y) -> if y == 0 then x else 0) (concat scoredBoards))
 
--- take all the cards from all the players and score them with a game
-type BingoCards = [[[Int]]]
-scoreGame :: BingoCards -> Game -> [ScoredCard]
-scoreGame cs g = map (`score` g)  cs
+-- take all the Boards from all the players and score them with a game
+type Boards = [[[Int]]]
+scoreDraw :: Boards -> Draw -> [ScoredBoard]
+scoreDraw cs g = map (`score` g)  cs
 
-findWinner :: [ScoredCard] -> ScoredCard
-findWinner cards = Data.Maybe.fromMaybe [] (find isComplete cards)
+findWinner :: [ScoredBoard] -> ScoredBoard
+findWinner boards = Data.Maybe.fromMaybe [] (find isComplete boards)
 
-isComplete :: ScoredCard -> Bool
+isComplete :: ScoredBoard -> Bool
 isComplete sc = any isCompleteLine sc || any isCompleteLine (transpose sc)
 
 isCompleteLine :: [(Int,Pos)] -> Bool
 isCompleteLine ((v,p):xs) = p /= 0 && isCompleteLine xs
 isCompleteLine [] = True
 
--- take a card and a Game and score the card
-score :: BingoCard -> Game -> ScoredCard
+-- take a boards and a Draw and score the boards
+score :: Board -> Draw -> ScoredBoard
 score c g = map (map (`checkNumber` g)) c
 
-checkNumber :: Int -> Game -> (Int, Int)
+checkNumber :: Int -> Draw -> (Int, Int)
 checkNumber n [] = (n,0) -- base case the number was not found in the game
 checkNumber n ((x,p):xs) = if n == x then (n, p) else checkNumber n xs
 
