@@ -15,10 +15,6 @@ split d "" = []
 split d xs = x : split d (drop 1 y)
              where (x,y) = span (/= d) xs
 
-trim :: String -> String
-trim s = f (f s)
-      where f = reverse . dropWhile (== ' ')
-
 game :: String -> [(Int,Pos)]
 game "" = []
 game s = zip (map read (split  ',' s) :: [Int]) [1..]
@@ -34,18 +30,17 @@ play gameFile = let x = lines gameFile :: [String]
                     g = game gameRow
                     bingoCards = card  cards -- parse all the cards
                     _play drawNumber = if any isComplete sg then
-                                          --scoreWinner (findWinner sg) (g !! (drawNumber -1))
-                                          findWinner sg
+                                          scoreWinner (findWinner sg) (g !! (drawNumber -1))
+                                      --    findWinner sg
                                        else
                                          _play (drawNumber + 1)
                                        where
                                           sg = scoreGame bingoCards (take drawNumber g)
-                   in  0 -- _play 5 -- remember we can only win with 5 or more numbers
+                   in  _play 5 -- remember we can only win with 5 or more numbers
 
 -- sum of all unmarked numbers * the last number drawn
-scoreWinner :: ScoredCard -> Int -> Int
-scoreWinner scoredCard  lastDrawnNumber = 0
-
+scoreWinner :: ScoredCard -> (Int, Pos) -> Int
+scoreWinner scoredCard (n,p) = n * sum (map (\(x,y) -> if y == 0 then x else 0) (concat scoredCard))
 
 -- take all the cards from all the players and score them with a game
 type BingoCards = [[[Int]]]
@@ -53,15 +48,10 @@ scoreGame :: BingoCards -> Game -> [ScoredCard]
 scoreGame cs g = map (`score` g)  cs
 
 findWinner :: [ScoredCard] -> ScoredCard
-findWinner cards = let result = find isComplete cards :: Maybe ScoredCard
-                       tCards = map transpose cards :: [ScoredCard]
-                       tResult = find isComplete tCards :: Maybe ScoredCard
-                   in
-                     Data.Maybe.fromMaybe (Data.Maybe.fromMaybe [] tResult) result
-
+findWinner cards = Data.Maybe.fromMaybe [] (find isComplete cards)
 
 isComplete :: ScoredCard -> Bool
-isComplete = any isCompleteLine
+isComplete sc = any isCompleteLine sc || any isCompleteLine (transpose sc)
 
 isCompleteLine :: [(Int,Pos)] -> Bool
 isCompleteLine ((v,p):xs) = p /= 0 && isCompleteLine xs
