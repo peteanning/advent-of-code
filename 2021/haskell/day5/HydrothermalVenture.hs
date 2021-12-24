@@ -38,11 +38,12 @@ linesCover ((x0,y0), (x1, y1)) =
 
 pointCount :: [Pos] -> Int
 pointCount ps = pointCount' 0 empty (sort ps)
-                where pointCount' acc visited (p:ps) | not (null ps) =
-                          if p == head ps && notMember p visited then
-                             pointCount' (acc + 1) (insert p visited) ps else pointCount' acc visited ps
-                                             | otherwise = acc
-                      pointCount' acc _ [] = acc
+                where pointCount' acc _ [] = acc
+                      pointCount' acc visited (p:ps) | not (null ps) =
+                                                       if p == head ps && notMember p visited then
+                                                         pointCount' (acc + 1) (insert p visited) ps 
+                                                       else pointCount' acc visited ps
+                                                     | otherwise = acc
 
 calcVentHotSpots :: String -> Int
 calcVentHotSpots filecontents = let i = parseLines filecontents
@@ -53,7 +54,6 @@ calcVentHotSpots filecontents = let i = parseLines filecontents
 run :: String -> IO Int
 run f = do
          contents <- readFile f
-         --print contents
          return $ calcVentHotSpots contents
 
 

@@ -20,7 +20,6 @@ main = hspec $ do
       parseWords ["0,0", "->", "9,9"] `shouldBe`  line1
     it "should convert a Line to an array [Pos]" $ do
       linesCover ((0,0), (0,3)) `shouldBe` [(0,0), (0,1), (0,2), (0,3)] 
-      --linesCover ((0,0), (0,0)) `shouldBe` [] 
       linesCover ((0,0), (3,0)) `shouldBe` [(0,0), (1,0), (2,0), (3,0)]
     it "should count the number of covered points" $ do
       pointCount [(0,0), (0,1), (0,2), (0,3), (0,0), (0,1)]  `shouldBe` 2  
