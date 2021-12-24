@@ -1,4 +1,4 @@
-module BingoSpece where
+module BingoSpec where
 
 import Test.Hspec
 
