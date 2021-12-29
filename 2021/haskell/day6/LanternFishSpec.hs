@@ -46,5 +46,6 @@ main = hspec $ do
     it "should count the population" $ do
           countPopulation (Map.toList  populationAt4days) `shouldBe` 9
           countPopulation (Map.toList (growPopulationByDays 80 population)) `shouldBe` 5934
+          countPopulation (Map.toList (growPopulationByDays 256 population)) `shouldBe` 26984457539
 
 
