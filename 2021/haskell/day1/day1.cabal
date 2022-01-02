@@ -17,7 +17,7 @@ maintainer:         peteanning@users.noreply.github.com
 -- A copyright notice.
 -- copyright:
 -- category:
-extra-source-files: CHANGELOG.md
+-- extra-source-files: CHANGELOG.md
 
 executable day1
     main-is: CountDepthInc.hs
