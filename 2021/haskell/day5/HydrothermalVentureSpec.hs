@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -Wno-deferred-out-of-scope-variables #-}
-module HydrothermalVentureSpec where
+module Main where
 
 import Test.Hspec
 import HydrothermalVenture

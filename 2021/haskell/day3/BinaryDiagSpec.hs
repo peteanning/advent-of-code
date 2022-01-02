@@ -1,4 +1,4 @@
-module BinaryDiagSpec where
+module Main where
 
 import Test.Hspec
 

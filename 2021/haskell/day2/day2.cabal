@@ -19,7 +19,7 @@ maintainer:         peteanning@users.noreply.github.com
 -- category:
 -- extra-source-files: CHANGELOG.md
 
-executable day1
+executable day2
     main-is: Dive.hs
 
     -- Modules included in this executable, other than Main.
@@ -30,3 +30,11 @@ executable day1
     build-depends:    base ^>=4.14.3.0, hspec
     hs-source-dirs:   .
     default-language: Haskell2010
+
+test-suite day2Spec
+    main-is: DiveSpec.hs 
+    other-modules: Dive
+    type: exitcode-stdio-1.0
+    build-depends: base, hspec
+
+

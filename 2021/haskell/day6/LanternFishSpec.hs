@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -Wno-deferred-out-of-scope-variables #-}
-module LanternFishSpec where
+module Main where
 
 import Test.Hspec
 import LanternFish
