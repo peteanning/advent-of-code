@@ -7,3 +7,10 @@ There are a few more dependencies specified in the cabal files, notably:
 - split
 - containers ( Data.Map Data.Set )
 
+## Testing
+
+`cabal v2-test all`
+
+or 
+
+`cabal v2-test day<n>`
