@@ -1,4 +1,4 @@
-module Main where
+module DiveSpec where
 
 import Test.Hspec
 

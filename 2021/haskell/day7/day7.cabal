@@ -1,0 +1,32 @@
+cabal-version:      2.4
+name:               day7
+version:            0.1.0.0
+
+-- A short (one-line) description of the package.
+-- synopsis:
+
+-- A longer description of the package.
+-- description:
+
+-- A URL where users can report bugs.
+-- bug-reports:
+license:            NONE
+author:             Pete Anning
+maintainer:         peteanning@users.noreply.github.com
+
+-- A copyright notice.
+-- copyright:
+-- category:
+-- extra-source-files: CHANGELOG.md
+
+executable day7
+    main-is: MoveCrabs.hs
+
+    -- Modules included in this executable, other than Main.
+    other-modules: MoveCrabsSpec 
+
+    -- LANGUAGE extensions used by modules in this package.
+    -- other-extensions:
+    build-depends:    base ^>=4.14.3.0, hspec, split ^>=0.2.3.4
+    hs-source-dirs:   .
+    default-language: Haskell2010
