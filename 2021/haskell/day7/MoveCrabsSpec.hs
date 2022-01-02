@@ -1,4 +1,4 @@
-module MoveCrabsSpec where
+module Main where
 
 import Test.Hspec
 

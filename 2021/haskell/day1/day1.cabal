@@ -32,8 +32,8 @@ executable day1
     default-language: Haskell2010
 
 test-suite day1Spec
-    main-is: CountDepthInc.hs 
-    other-modules: CountDepthIncSpec
+    main-is: CountDepthIncSpec.hs 
+    other-modules: CountDepthInc
     test-module: CountDepthIncSpec
     type: exitcode-stdio-1.0
     build-depends: base, hspec
