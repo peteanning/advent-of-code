@@ -1,6 +1,6 @@
-module CountDepthIncSpec where
+module Main where
 import Test.Hspec
-import CountDepthInc
+import CountDepthInc (getIncreases)
 
 main :: IO ()
 main = hspec $ do

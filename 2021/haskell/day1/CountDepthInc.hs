@@ -1,4 +1,4 @@
-module CountDepthInc where
+module CountDepthInc  where
 
 getIncreases :: [Int] -> Int -> Int
 getIncreases [] _ = 0
@@ -8,8 +8,10 @@ getIncreases (n:ns) acc = if n < head (ns) then
                             getIncreases ns acc
 
 
-getWords :: FilePath -> IO ()
-getWords path = do contents <- readFile path
-                   let depths =  map read (lines contents) :: [Int]
-                   print $ getIncreases depths 0
 
+main :: FilePath -> IO ()
+main path = do contents <- readFile path
+               let depths =  map read (lines contents) :: [Int]
+               print $ getIncreases depths 0
+               return ()
+ 
