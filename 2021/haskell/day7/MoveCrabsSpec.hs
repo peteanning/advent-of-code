@@ -13,7 +13,7 @@ uniquePostitions = [0..16]
 
 
 main = hspec $ do
-  describe "MoveCrabs tests" $ do
+  describe "Day 7 Part 1" $ do
     it "should create a sorted list of positions from the test file loaded as a String" $ do
       sortedPositions testFileContents `shouldBe` positions
     it "should create a frequency  list" $ do
@@ -26,8 +26,16 @@ main = hspec $ do
     it "should find the total cost of a move" $ do
       totalCostOfMove costOfMovingZero `shouldBe` 49
       totalCostOfMove costOfMovingOne `shouldBe` 41
+      totalCostOfMove ( costOfMove 2 frequencyMap) `shouldBe` 37
     it "should calculate the total of all the move costs " $ do
-      calculateMoveCosts uniquePostitions frequencyMap `shouldBe` [(0,49),(1,41),(2,37),(3,39),(4,41),(5,45),(6,49),(7,53),(8,59),(9,65),(10,71),(11,77),(12,83),(13,89),(14,95),(15,103),(16,111)]
+      calculateMoveCosts costOfMove uniquePostitions frequencyMap `shouldBe` [(0,49),(1,41),(2,37),(3,39),(4,41),(5,45),(6,49),(7,53),(8,59),(9,65),(10,71),(11,77),(12,83),(13,89),(14,95),(15,103),(16,111)]
     it "should calculate the lowest cost move to align to the same postition" $ do
-      cheapestMove frequencyMap `shouldBe` 37 
- 
+      cheapestMove costOfMove frequencyMap `shouldBe` 37 
+  describe "Day 7 Part 2" $ do
+    it "should calculate non linear fuel costs" $ do
+      totalCostOfMove (costOfMoveNonLinear 2 frequencyMap) `shouldBe` 206 
+      totalCostOfMove (costOfMoveNonLinear 5 frequencyMap) `shouldBe` 168 
+    it "should calculate total fuel costs in a non linear way" $ do
+      cheapestMove costOfMoveNonLinear frequencyMap `shouldBe` 168
+
+

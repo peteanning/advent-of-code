@@ -14,14 +14,19 @@ frequency :: [Int] -> [(Int, Int)]
 frequency n =  let grouped = group n
                in map (\(x:xs) -> (x, length (x:xs))) grouped
 
-cheapestMove :: [(Int, Int)] -> Int
-cheapestMove fs = findCheapest $ calculateMoveCosts (rawPositions fs) fs
+cheapestMove :: (Int -> [(Int, Int)] -> [(Int, Int)]) -> [(Int, Int)] -> Int
+cheapestMove f fs = findCheapest $ calculateMoveCosts f (rawPositions fs) fs
 
-calculateMoveCosts (p:ps) fs = (p, totalCostOfMove (costOfMove p  fs)) : calculateMoveCosts ps fs
-calculateMoveCosts [] _ = []
+calculateMoveCosts :: (Int -> [(Int, Int)] -> [(Int, Int)]) -> [Int] -> [(Int, Int)] -> [(Int, Int)]
+calculateMoveCosts f (p:ps) fs = (p, totalCostOfMove (f p  fs)) : calculateMoveCosts f ps fs
+calculateMoveCosts _ [] _ = []
 
 costOfMove :: Int -> [(Int, Int)] -> [(Int, Int)]
 costOfMove m = map (\(x,y) -> (x, y * abs (x - m)))
+
+costOfMoveNonLinear :: Int -> [(Int, Int)] -> [(Int, Int)]
+costOfMoveNonLinear m = let f n = sum [1..n]
+                        in map (\(x,y) -> (x, y * f (abs (x - m))))
 
 totalCostOfMove :: [(Int, Int)] -> Int
 totalCostOfMove costs = sum $ map snd costs
@@ -33,8 +38,13 @@ rawPositions :: [(Int, Int)] -> [Hpos]
 rawPositions fs = let positions = map fst fs
                   in [(minimum positions)..(maximum positions)]
 
-run :: String -> IO Int 
+run :: String -> IO ()
 run filePath = do
                   contents <- readFile filePath
-                  let result = cheapestMove . frequency $ sortedPositions contents
-                  return result 
+                  let result = cheapestMove (costOfMove) . frequency $ sortedPositions contents
+                  let resultNonLinear = cheapestMove (costOfMoveNonLinear) . frequency $ sortedPositions contents
+                  print "Linear result"
+                  print result
+                  print "NonLinear result"
+                  print resultNonLinear
+                  return () 
