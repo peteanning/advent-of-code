@@ -19,7 +19,7 @@ main = hspec $ do
     it "should create a frequency  list" $ do
       frequency positions `shouldBe` frequencyMap
     it "should create a sorted list of unique postitions" $ do
-      rawPositions frequencyMap `shouldBe` [0..16]
+      range frequencyMap `shouldBe` [0..16]
     it "should find the cost of a single move" $ do
       costOfMove 0 frequencyMap `shouldBe` costOfMovingZero
       costOfMove 1 frequencyMap `shouldBe` costOfMovingOne
