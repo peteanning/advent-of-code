@@ -13,7 +13,11 @@ class SevenSegmentSearchSpec extends org.scalatest.funsuite.AnyFunSuite {
 
   def s = splitSignalsAndObservations(List("acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf"))
 
+  def s2 = splitSignalsAndObservations(List("be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe"))
+
   def knowns = convertSignalsToKnownDigits(s(0)._1)
+
+  def all = findOverlaps(knowns)
 
 
   test("SevenSegmentSearch loadData") {
@@ -60,9 +64,24 @@ class SevenSegmentSearchSpec extends org.scalatest.funsuite.AnyFunSuite {
   }
 
   test("should find the overlaps between known and unknowns and map them to a full set of Digits") {
-    val all = findOverlaps(knowns)
     assert(all.size == 10) 
-
+    assert(all.exists((k,v) => v == None) == false)
+    assert(all.get("acedgfb").get == Some(8))
+    assert(all.get("cdfbe").get == Some(5))
+    assert(all.get("gcdfa").get == Some(2))
+    assert(all.get("fbcad").get == Some(3))
+    assert(all.get("dab").get == Some(7))
+    assert(all.get("cefabd").get == Some(9))
+    assert(all.get("cdfgeb").get == Some(6))
+    assert(all.get("eafb").get == Some(4))
+    assert(all.get("cagedb").get == Some(0))
+    assert(all.get("ab").get == Some(1))
   }
-
+  test("should decode the digits") {
+    val decoded = decodeDigits(s(0)._2, all)
+    assert(decoded == 5353)
+  }
+  test("shoud process the whole file and sum the digits") {
+    assert(processData(testfile) == 61229)
+  }
 }
