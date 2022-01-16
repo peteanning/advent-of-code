@@ -84,4 +84,10 @@ class SevenSegmentSearchSpec extends org.scalatest.funsuite.AnyFunSuite {
   test("shoud process the whole file and sum the digits") {
     assert(processData(testfile) == 61229)
   }
+  test("should convert a list of Ints to an Int List(1,2,3,4) = 1234 ") {
+    assert(listIntToInt(List(1,2,3,4)) == 1234)
+    assert(listIntToInt(List(1,0,0,4)) == 1004)
+    assert(listIntToInt(List(0,0,0,0)) == 0)
+
+  }
 }

@@ -85,7 +85,10 @@ object SevenSegmentSearch extends App:
     val sortedDisplays = displays.map(_.sorted)
     val sortedMappings = mappings.map((k,v) => (k.sorted, v))
     val decodedDigits = sortedDisplays.map(s => sortedMappings.get(s).flatten.get)
-    decodedDigits.foldRight((0,1))( (c, acc) => (acc._1 + (c * acc._2), acc._2 * 10))._1
+    listIntToInt(decodedDigits)
+
+  def listIntToInt(list: List[Int]): Int =
+    list.foldRight((0,1))( (c, acc) => (acc._1 + (c * acc._2), acc._2 * 10))._1
 
   def processData(classPathName: String): Int =
    val data = loadData(classPathName)
