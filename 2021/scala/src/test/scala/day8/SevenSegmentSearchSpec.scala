@@ -13,8 +13,6 @@ class SevenSegmentSearchSpec extends org.scalatest.funsuite.AnyFunSuite {
 
   def s = splitSignalsAndObservations(List("acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf"))
 
-  def s2 = splitSignalsAndObservations(List("be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe"))
-
   def knowns = convertSignalsToKnownDigits(s(0)._1)
 
   def all = findOverlaps(knowns)
