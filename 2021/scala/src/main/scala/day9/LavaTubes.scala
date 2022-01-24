@@ -17,18 +17,19 @@ object LavaTubes extends App:
       p = Pos(i, j)
       if lowest(p, m)
     } yield Height(p, v)}.toList
-
+  /*
+   * This implements a bredth first search algorithm
+   */
   def getLegalNeighbours(h: Height, m: List[List[Int]]) =
-    def _getLegalNeighbours(q: List[Height], visited: Set[Height]): List[Height] =
-      q match {
+    def _getLegalNeighbours(queue: List[Height], visited: Set[Height]): List[Height] =
+      queue match {
         case Nil => visited.toList
         case h :: hs => {
           if !visited.contains(h) then
               val inboundNeighbours = List(up(h.p,m), down(h.p,m), left(h.p,m), right(h.p,m)).filterNot(_._3)
               val heights = inboundNeighbours.map((i,j,b) => Height(Pos(i, j), m(i)(j))).filter(_.height < 9)
-              // add the newly found neighbours to the visited list
               val newVisited = visited + h
-              _getLegalNeighbours(heights ++ hs ,newVisited) 
+              _getLegalNeighbours(heights ++ hs, newVisited) 
           else
             _getLegalNeighbours(hs, visited)
         }
@@ -45,8 +46,6 @@ object LavaTubes extends App:
   def lowest(p: Pos, m: List[List[Int]]):Boolean = 
     def default(d: (Int, Int, Boolean)): Int =
       if !d._3 then m(d._1)(d._2) else 10
-
-    //println(s"Up $up Down $down Left $left Right $right")
 
     val h = m(p.i)(p.j)
     val upHeight = default(up(p,m))
