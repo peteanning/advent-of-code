@@ -8,7 +8,7 @@ class LavaTubesSpec extends org.scalatest.funsuite.AnyFunSuite {
   def d = loadData("/day9/test.txt")
 
   test("Walk the Map") {
-    assert(walkMap(m) == List((0,0,1), (2,2,0)))    
+    assert(walkMap(m) == List( Height(Pos(0,0),1), Height(Pos(2,2),0)))    
   }
 
   test("loadData") {
@@ -20,11 +20,26 @@ class LavaTubesSpec extends org.scalatest.funsuite.AnyFunSuite {
   }
 
   test("loadData and findLowest co-ordinates") {
-    assert(walkMap(d) == List((0,1,1), (0,9,0), (2,2,5), (4,6,5)))
+    assert(walkMap(d) == List(Height(Pos(0,1),1), Height(Pos(0,9),0), Height(Pos(2,2),5), Height(Pos(4,6),5)))
   }
 
   test("The Sum of the heights plus one at the lowest points") {
     assert(riskLevels(walkMap(d)) == 15)
+  }
+
+  test("getLegalNeighbours for a basin should return all members of the basin") {
+    val result = getLegalNeighbours(Height(Pos(0,0), 2), d)
+    assert(result.length == 3)
+  }
+
+  test("discover all the basins") {
+    val result = discoverBasins(walkMap(d), d)
+    assert(result.length == 4)
+  }
+
+  test("calculate the product of the sizes of the 3 largest basins") {
+    val result = productOdThreeLargestBasinSizes(discoverBasins(walkMap(d), d))
+    assert(result == 1134)
   }
   
 }
