@@ -17,6 +17,7 @@ object LavaTubes extends App:
       p = Pos(i, j)
       if lowest(p, m)
     } yield Height(p, v)}.toList
+ 
   /*
    * This implements a bredth first search algorithm
    */
