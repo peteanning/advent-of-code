@@ -38,7 +38,7 @@ class LavaTubesSpec extends org.scalatest.funsuite.AnyFunSuite {
   }
 
   test("calculate the product of the sizes of the 3 largest basins") {
-    val result = productOdThreeLargestBasinSizes(discoverBasins(walkMap(d), d))
+    val result = productOfThreeLargestBasinSizes(discoverBasins(walkMap(d), d))
     assert(result == 1134)
   }
   

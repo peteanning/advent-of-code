@@ -40,7 +40,7 @@ object LavaTubes extends App:
   def discoverBasins(lowPoints: List[Height], m: List[List[Int]]): List[List[Height]] =
     lowPoints.map(getLegalNeighbours(_, m))
 
-  def productOdThreeLargestBasinSizes(basins: List[List[Height]]): Int =
+  def productOfThreeLargestBasinSizes(basins: List[List[Height]]): Int =
     assert(basins.length >= 3, s"There were not enough basis. Found ${basins.length} basins")
     basins.map(_.length).sorted.reverse.take(3).product
 
