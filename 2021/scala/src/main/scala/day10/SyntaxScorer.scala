@@ -24,7 +24,6 @@ object SyntaxScorer extends App:
     val parsedFiltered = parsed.filterNot(_ == None)
     val midpointIndex = (parsedFiltered.length - 1) / 2
     val sorted = parsedFiltered.sorted
-    //println(parsed)
     sorted(midpointIndex).getOrElse(0l)
     
   def parseIncomplete(completeLine: List[String]): Option[Long] =
