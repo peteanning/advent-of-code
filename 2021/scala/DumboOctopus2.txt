@@ -1,11 +1,13 @@
 package day11
 
+
 object DumboOctopus extends App:
 
   def loadData(fileName: String): List[List[Int]] =
     val source = io.Source.fromInputStream(getClass.getResourceAsStream(fileName))
     val text = try source.getLines.toList finally source.close()
     text.map(_.toArray.toList.map(_.asDigit))
+
 
   def makeOctopi(octopiMap: List[List[Int]]): Map[Pos, Octopus] = 
     {for {
@@ -37,8 +39,4 @@ case class Pos(x: Int, y: Int) {
     def neighbours(bounds: Pos) = List(upLeft, up, upRight, left, right, downLeft, down, downRight)
       .filter(p => (p.x >= 0 && p.y >= 0 && p.x <= bounds.x && p.y <= bounds.y)) 
 }
-
-object Pos:
-  // ordering converts a Pos into a tuple and uses the builtin ordering for that
-  given orderingByPos[A <: Pos]: Ordering[Pos] = Ordering.by (p => (p.x, p.y))
 
