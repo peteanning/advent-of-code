@@ -35,6 +35,20 @@ object DumboOctopus extends App:
   def update(octopiMap: Map[Point, Octopus], newMap: Map[Point, Octopus]): Map[Point, Octopus] =
     octopiMap ++ newMap
 
+  def step(octopiMap: Map[Point, Octopus], noOfSteps: Int, noOfFlashes: Int): (Map[Point, Octopus], Int) =
+    noOfSteps match {
+      case 0 => (octopiMap, countFlashes(octopiMap) + noOfFlashes)
+      case _ => {
+        val os = step(octopiMap)
+        val remainingSteps = noOfSteps - 1
+        val flashes = countFlashes(os)
+        val currentTotalFlashes = noOfFlashes + flashes
+        step(reset(os), remainingSteps, currentTotalFlashes)
+      }
+    }
+
+  def countFlashes(octopiMap: Map[Point, Octopus]): Int =
+    flashers(octopiMap).size
 
   def step(octopiMap: Map[Point, Octopus]) =
     val b = bounds(octopiMap)
@@ -43,7 +57,7 @@ object DumboOctopus extends App:
 
     def _step(flashingQueue: List[Point], os: Map[Point, Octopus], visited: Set[(VisitedBy, Point)]): Map[Point, Octopus] =
       flashingQueue match {
-        case Nil => reset(os)
+        case Nil => os
         case p :: ps => {
           val notVisited : List[(VisitedBy, Point)] = neighboursNotVisited(p, visited, b)
           val neighboursInc: List[(Point, Octopus)] =

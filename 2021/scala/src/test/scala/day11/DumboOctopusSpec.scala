@@ -12,7 +12,6 @@ class DumboOctopusSpec extends org.scalatest.funsuite.AnyFunSuite {
 
   def ZERO: Point = Point(0,0)
 
-
   test("shoudl load the test data") {
     assert(data.length == 10)
     assert(data(0) == line1)
@@ -80,6 +79,11 @@ class DumboOctopusSpec extends org.scalatest.funsuite.AnyFunSuite {
     assert(rst.find((p,o) => o.flashing) == None)
 
   }
+  test ("should return the number of flashing Octopi") {
+    val inc = increment(makeOctopi(smallData))
+    assert(8 == countFlashes(inc))
+
+  }
   test("should return a list of all the currently flashing Octopi") {
     val inc = increment(makeOctopi(smallData))
     val flashing = flashers(inc).sorted
@@ -118,7 +122,7 @@ class DumboOctopusSpec extends org.scalatest.funsuite.AnyFunSuite {
   test("step1 no flashers ") {
    val testData = loadData("/day11/test.txt")
    val octopi = makeOctopi(testData)
-   val result = step(octopi)
+   val result = reset(step(octopi))
    val expected = makeOctopi(loadData("/day11/test-step1.txt"))
    assert(expected == result)
   }
@@ -128,8 +132,22 @@ class DumboOctopusSpec extends org.scalatest.funsuite.AnyFunSuite {
    val octopi = makeOctopi(testData)
    val result = step (step(octopi))
    val expected = makeOctopi(loadData("/day11/test-step2.txt"))
-   assert(expected == result)
+   assert(expected == reset(result))
   }
+
+  test ("should execute n steps and n resets") {
+      val testData = loadData("/day11/test.txt")
+      val octopi = makeOctopi(testData)
+      val (result, flashCount) = step(octopi, 3, 0)
+      val expected = makeOctopi(loadData("/day11/test-step3.txt"))
+      assert(expected == result)
+
+      val (result10, flashCount10) = step(octopi, 10, 0)
+      val expected10 = makeOctopi(loadData("/day11/test-step10.txt"))
+      assert(expected10 == result10)
+      assert(204 == flashCount10)
+
+    }
 
 
 }
