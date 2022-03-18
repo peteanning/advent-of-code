@@ -47,6 +47,20 @@ object DumboOctopus extends App:
       }
     }
 
+  def targetStep(octopiMap: Map[Point, Octopus]): Int =
+    val limit = 1000
+    val noOfOctopi = octopiMap.size
+    def _targetStep(octopiMap: Map[Point, Octopus], noOfSteps: Int): Int =
+      if noOfSteps < limit then
+        val s = step(octopiMap)
+        if countFlashes(s) == noOfOctopi then
+          noOfSteps + 1
+        else
+          _targetStep(reset(s), noOfSteps + 1)
+      else
+        -1
+    _targetStep(octopiMap, 0)
+
   def countFlashes(octopiMap: Map[Point, Octopus]): Int =
     flashers(octopiMap).size
 

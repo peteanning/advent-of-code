@@ -148,7 +148,12 @@ class DumboOctopusSpec extends org.scalatest.funsuite.AnyFunSuite {
       assert(204 == flashCount10)
 
     }
-
+  test ("should count when all the Octopi Flash") {
+     val testData = loadData("/day11/test.txt")
+     val octopi = makeOctopi(testData)
+     val result = targetStep(octopi)
+     assert(195 == result)
+  }
 
 }
 
