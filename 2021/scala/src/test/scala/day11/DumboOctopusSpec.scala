@@ -73,8 +73,64 @@ class DumboOctopusSpec extends org.scalatest.funsuite.AnyFunSuite {
    assert(neighbours.sorted == expected.sorted)
   }
 
+  test("reset the Map after flashing") {
+    val inc = increment(increment(makeOctopi(data)))
+    assert(inc.find((p,o) => o.flashing) == Some(Point(8,4), Octopus(10)))
+    val rst = reset(inc)
+    assert(rst.find((p,o) => o.flashing) == None)
+
+  }
+  test("should return a list of all the currently flashing Octopi") {
+    val inc = increment(makeOctopi(smallData))
+    val flashing = flashers(inc).sorted
+    assert(flashing.size == 8)
+    val expected = List(Point(1,1), Point(2,1), Point(3,1),
+                        Point(1,2),Point(3,2),
+                        Point(1,3), Point(2,3), Point(3,3)
+                        ).sorted
+    assert(flashing == expected)
+  }
+
+  test ("update should replace the items in the first map with items in the second") {
+    val octopi: Map[Point, Octopus] = Map((Point(0,0), Octopus(1)), (Point(1,1), Octopus(2)), (Point(0,1), Octopus(3)))
+    val updated: Map[Point, Octopus] = Map((Point(0,0), Octopus(8)))
+    val expected: Map[Point, Octopus] = Map((Point(0,0), Octopus(8)), (Point(1,1), Octopus(2)), (Point(0,1), Octopus(3)))
+    val result = update(octopi, updated)
+    assert(expected == result)
 
 
-    
+  }
+  test("should return a list of neighbours not yet visited") {
+    val p = Point(0,0)
+    val b = Point(2,2)
+    val neighbours = p.neighbours(b).sorted
+    val notVisted = neighboursNotVisited(p, Set.empty, b).map((_,p) => p).sorted
+
+    assert(neighbours == notVisted)
+
+    val nMinus = neighbours.filterNot(p => p == Point(1,1)).sorted
+    assert(nMinus.size == 2)
+    val newNotVisited = neighboursNotVisited(p, Set((p, Point(1,1))), b).map((_,p) => p).sorted 
+    assert(nMinus == newNotVisited) 
+  }
+
+
+  test("step1 no flashers ") {
+   val testData = loadData("/day11/test.txt")
+   val octopi = makeOctopi(testData)
+   val result = step(octopi)
+   val expected = makeOctopi(loadData("/day11/test-step1.txt"))
+   assert(expected == result)
+  }
+
+  test("step2 ") {
+   val testData = loadData("/day11/test.txt")
+   val octopi = makeOctopi(testData)
+   val result = step (step(octopi))
+   val expected = makeOctopi(loadData("/day11/test-step2.txt"))
+   assert(expected == result)
+  }
+
+
 }
 

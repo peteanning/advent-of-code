@@ -20,32 +20,50 @@ object DumboOctopus extends App:
     
   def bounds(octopiMap: Map[Point, Octopus]) =
     octopiMap.keys.maxBy[(Int, Int)](p => (p.x, p.y))
+  def reset(octopiMap: Map[Point, Octopus]) = 
+    octopiMap.map((p, o) => (p, o.reset))
+
+  def neighboursNotVisited(visitor: Point, visited: Set[(VisitedBy, Point)],
+    bounds: Point): List[(VisitedBy,Point)] =
+    
+    val neighbours = visitor.neighbours(bounds).map(p => (visitor, p)).toSet
+    (neighbours -- visited).toList
+    
+  def flashers(octopiMap: Map[Point, Octopus]) =
+    octopiMap.filter((_,o) => o.flashing).toList.map((p,o) => p)
+
+  def update(octopiMap: Map[Point, Octopus], newMap: Map[Point, Octopus]): Map[Point, Octopus] =
+    octopiMap ++ newMap
+
 
   def step(octopiMap: Map[Point, Octopus]) =
     val b = bounds(octopiMap)
     val incremented = increment(octopiMap)
-    val flashers = incremented.filter((_,o) => o.flashing).toList.map((p,o) => p)
+    val flash = flashers(incremented)
 
     def _step(flashingQueue: List[Point], os: Map[Point, Octopus], visited: Set[(VisitedBy, Point)]): Map[Point, Octopus] =
       flashingQueue match {
-        case Nil => os
+        case Nil => reset(os)
         case p :: ps => {
-
-          val neighboursNotVisited : List[(VisitedBy, Point)] = 
-            (visited -- p.neighbours(b).map(point => (p,point)).toSet).toList
-          val neighboursInc = neighboursNotVisited.map((_,p) => (p, os(p).increment))
-          val updatedOctupi = os ++ neighboursInc.toMap 
-          val flashers = neighboursInc.filter((p,o) => o.flashing).map((p,_) => p)
-          val newVisited = visited ++ p.neighbours(b).map(point => (p, point))
-          _step(flashers ++ flashingQueue, updatedOctupi, newVisited)
+          val notVisited : List[(VisitedBy, Point)] = neighboursNotVisited(p, visited, b)
+          val neighboursInc: List[(Point, Octopus)] =
+            notVisited.map((_,p) => (p, os(p).increment))
+          val updatedOctupi = update(os, neighboursInc.toMap)
+          val flashing = flashers(neighboursInc.toMap)
+          val newVisited = visited ++ notVisited.toSet
+          _step(ps ++ flashing, updatedOctupi, newVisited)
         }
       }
-    
-    _step(flashers, incremented, Set.empty)
+    _step(flash, incremented, Set.empty)
 
 case class Octopus(v: Int) {
   def flashing: Boolean = v > 9
   def increment = new Octopus(v + 1)
+  def reset = 
+    if flashing then
+      new Octopus(0)
+    else
+      this
 }
 
 case class Point(x: Int, y: Int) {
