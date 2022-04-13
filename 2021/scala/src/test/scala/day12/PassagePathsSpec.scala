@@ -5,12 +5,25 @@ import PassagePaths._
 class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
 
   def data: List[(String, String)] = loadData("/day12/test.txt")
-  def paths(fileName: String): List[List[Vertex]] =
+  def loadPaths(fileName: String): List[List[Vertex]] =
     val source = io.Source.fromInputStream(getClass.getResourceAsStream(fileName))
     val text = try source.getLines.toList finally source.close
     text.map(line => line.split(',').toList.map(v => Vertex(v)))
-  def vertice =  paths("/day12/test-paths.txt")
+  def vertice =  loadPaths("/day12/test-paths.txt")
 
+  test ("Vertex should have properties") {
+    val v = Vertex("c")
+    val vBig = Vertex("C")
+    val start = Vertex("start")
+    val end = Vertex("end")
+
+    assert(v.isBig == false)
+    assert(vBig.isBig == true)
+    assert(start.isStart == true)
+    assert(end.isEnd == true)
+    
+
+  }
 
   test("load data") {
     assert(("start", "A") == data(0))
@@ -27,4 +40,26 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
     assert(vertice(0) == List("start","A","b","A","c","A","end").map(Vertex(_)))
     assert(vertice(9) == List("start","b","end").map(Vertex(_)))
   }  
+  test ("should check if a Path is complete") {
+   val completePath = List(Vertex("start"), Vertex("end"))
+   val inCompletePath = List(Vertex("start"), Vertex("a"))
+
+   assert(isComplete(completePath) == true)
+   assert(isComplete(inCompletePath) == false)
+  }
+  test ("should findPaths") {
+    val al = addPathsForLargeCaves(makeAdjacencyList(data))
+    val paths = findPaths(al)
+    println(paths)
+  }
+  test ("should find Vertex that are connected to by large caves") {
+    val testData = loadData("/day12/test-2.txt")
+    val al = makeAdjacencyList(testData)
+    val result = addPathsForLargeCaves(al)
+    val v = result("x")
+    val c = result("c")
+    assert(v == List(Vertex("A")))
+    assert(c == List(Vertex("A")))
+
+  }
 }
