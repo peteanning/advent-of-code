@@ -48,9 +48,10 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
    assert(isComplete(inCompletePath) == false)
   }
   test ("should findPaths") {
-    val al = addPathsForLargeCaves(makeAdjacencyList(data))
+    val _data = loadData("/day12/test-small.txt")
+    val al = addPathsForLargeCaves(makeAdjacencyList(_data))
     val paths = findPaths(al)
-    println(paths)
+    println(paths.size)
   }
   test ("should find Vertex that are connected to by large caves") {
     val testData = loadData("/day12/test-2.txt")

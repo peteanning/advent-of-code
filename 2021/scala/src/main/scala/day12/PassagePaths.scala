@@ -22,20 +22,27 @@ object PassagePaths extends App:
       al ++ foo
 
   def findPaths(adjacencyList: Map[String, List[Vertex]]) =
-    def _findPaths(queue: List[Vertex], paths: List[Vertex], visited: Set[Vertex]): List[Vertex] = 
+    def _findPaths(queue: List[Vertex], currentPath: List[Vertex], visited: Set[List[Vertex]]): List[List[Vertex]] = 
       queue match {
         case Nil => visited.toList
         case v :: vs => {
-          if visited.contains(v) then
-            _findPaths(vs, paths :+ v, visited)
-          else
-            val maybeNs: Option[List[Vertex]] = adjacencyList.get(v.v)
-            maybeNs.fold(_findPaths(vs, paths, visited + v))
-               (ns => _findPaths(vs ++ ns, paths :+ v, visited + v)) 
-        }
-      }
-  
+          println(s"Queue $queue")
+          val _currentPath = currentPath :+ v
+          println(s"Current Path $_currentPath")
+          println(s"Visited $visited")
 
+          if isComplete(_currentPath) && visited.contains(_currentPath) then
+            // base case
+            visited.toList
+          else if(isComplete(_currentPath)) then
+            val _visited = visited + _currentPath
+            _findPaths(vs, List.empty, _visited)
+          else
+            val ns = adjacencyList.get(v.v).getOrElse(List.empty)
+            _findPaths(ns ++ vs, _currentPath, visited)
+        }
+      } 
+  
     _findPaths(List(Vertex("start")), List.empty, Set.empty)
 
   def isComplete(p: Path): Boolean =
