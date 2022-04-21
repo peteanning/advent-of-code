@@ -21,6 +21,8 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
     assert(vBig.isBig == true)
     assert(start.isStart == true)
     assert(end.isEnd == true)
+    assert(start.isBig == false)
+    assert(end.isBig == false)
     
 
   }
@@ -47,20 +49,28 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
    assert(isComplete(completePath) == true)
    assert(isComplete(inCompletePath) == false)
   }
-  test ("should findPaths") {
-    val _data = loadData("/day12/test-small.txt")
-    val al = addPathsForLargeCaves(makeAdjacencyList(_data))
-    val paths = findPaths(al)
-    println(paths.size)
+  test ("should buils a list of neighbours that if small have not been visited") {
+    val al: AdjacencyList = Map("A" -> List(Vertex("b"), Vertex("c"))) 
+    val neighbours = addLegalNeighbours(Vertex("A"), List(Vertex("start")), al, Set((Vertex("A"),Vertex("c"))))
+    println(s"Neighbours $neighbours")   
   }
+  test ("should findPaths") {
+    val _data = loadData("/day12/test.txt")
+    val al = makeAdjacencyList(_data)
+    val alWithLargeCaves = addPathsForLargeCaves(al)
+    val paths = findPathsII(alWithLargeCaves)
+    assert(paths == 10)
+
+  }
+  //todo this shoudl test for b as well.
   test ("should find Vertex that are connected to by large caves") {
     val testData = loadData("/day12/test-2.txt")
     val al = makeAdjacencyList(testData)
     val result = addPathsForLargeCaves(al)
     val v = result("x")
     val c = result("c")
+    val b = result("b")
     assert(v == List(Vertex("A")))
     assert(c == List(Vertex("A")))
-
   }
 }
