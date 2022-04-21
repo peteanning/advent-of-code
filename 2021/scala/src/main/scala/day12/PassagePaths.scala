@@ -16,16 +16,28 @@ object PassagePaths extends App:
   def makeAdjacencyList(data: List[(String, String)]): Map[String, List[Vertex]] =
     (data.groupMap((m,n) => m)((x,y) => Vertex(y))).mapValues(l => l.sorted).toMap
 
-  def addPathsForLargeCaves(al: AdjacencyList) =
-      val largeCaves = al.filter((k,v) => Vertex(k).isBig)
-        .mapValues(vs => vs.filter(v => al.get(v.v) == None && v.isEnd == false )).toMap.toList
-      val foo = largeCaves.foldLeft(Map[String, List[Vertex]]())
-              ((B,A) => B ++ A._2.map(v => (v.v, List(Vertex(A._1)))).toMap)
-      al ++ foo
+  def addPathsForLargeCaves(al: AdjacencyList): AdjacencyList =
+      val largeCaves: List[(String, List[(Vertex, List[Vertex])])] = al.filter((k,v) => Vertex(k).isBig)
+        .mapValues(vs => vs.filterNot(_.isEnd)).mapValues(vs => vs.map(v => (v, al.get(v.v).getOrElse(List.empty)))).toList
+      val alWithReturnPaths: AdjacencyList = largeCaves.flatMap((k, l) => l.map((v, vs) => (v.v, vs :+ Vertex(k)))).toMap
+      al ++ alWithReturnPaths
  
   def addLegalNeighbours(v: Vertex, path: List[Vertex], adjacencyList: AdjacencyList, visited: Set[(VistedBy, Vertex)]): List[(Vertex, List[Vertex])] = 
       val neighbours: List[Vertex] = adjacencyList.get(v.v).getOrElse(List.empty)
       neighbours.filterNot(n => visited.contains((path.last, n))).map(n => (n, path :+n))
+
+
+  def foo(findNeighboursFor: Vertex, // A
+          pathForVertex: List[Vertex], // start/A/c/A
+          adjacencyList: AdjacencyList, // the whole graph
+          visited: Set[(VistedBy, Vertex)] // will contain (A, c)
+          ): List[(Vertex, List[Vertex])] =
+
+            val neighbours = adjacencyList.get(findNeighboursFor.v).getOrElse(List.empty)
+            // map over the neighbours and remove any that have already been visited
+            val unvisited = neighbours.filterNot(n => visited.contains((findNeighboursFor, n)))
+            unvisited.map(v => (v, pathForVertex :+ v))
+
 
   def findPathsII(adjacencyList: AdjacencyList): Int =
 

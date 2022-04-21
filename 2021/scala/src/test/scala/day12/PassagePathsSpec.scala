@@ -49,6 +49,21 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
    assert(isComplete(completePath) == true)
    assert(isComplete(inCompletePath) == false)
   }
+  test ("should visit small caves at most once in a path to the end") {
+      val al = makeAdjacencyList(data)
+      val alWithLargeCaves = addPathsForLargeCaves(al)
+      val findNeighboursForA = Vertex("A")
+      val pathForVertex = List(Vertex("start"), Vertex("A"), Vertex("c"), Vertex("A"))
+      val visited = Set((findNeighboursForA, Vertex("c")))
+
+      val result = foo(findNeighboursForA, pathForVertex, alWithLargeCaves, visited).sorted
+      val expected = List((Vertex("end"), pathForVertex :+ Vertex("end")),
+                          (Vertex("b"), pathForVertex :+ Vertex("b"))).sorted
+
+
+      assert(expected == result)
+
+  }
   test ("should buils a list of neighbours that if small have not been visited") {
     val al: AdjacencyList = Map("A" -> List(Vertex("b"), Vertex("c"))) 
     val neighbours = addLegalNeighbours(Vertex("A"), List(Vertex("start")), al, Set((Vertex("A"),Vertex("c"))))
@@ -59,18 +74,20 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
     val al = makeAdjacencyList(_data)
     val alWithLargeCaves = addPathsForLargeCaves(al)
     val paths = findPathsII(alWithLargeCaves)
-    assert(paths == 10)
+    //assert(paths == 3)
 
   }
-  //todo this shoudl test for b as well.
   test ("should find Vertex that are connected to by large caves") {
-    val testData = loadData("/day12/test-2.txt")
-    val al = makeAdjacencyList(testData)
+    val al = makeAdjacencyList(data)
     val result = addPathsForLargeCaves(al)
-    val v = result("x")
     val c = result("c")
-    val b = result("b")
-    assert(v == List(Vertex("A")))
-    assert(c == List(Vertex("A")))
+    val b = result("b").sorted
+    val A = Vertex("A")
+    assert(c == List(A))
+    assert(b == List(A, Vertex("d"), Vertex("end")).sorted)
+    assert(result("start").sorted == List(A, Vertex("b")).sorted)
+    assert(result.get("end") == None)
+    assert(result("A").sorted == List(Vertex("b"), Vertex("end"), Vertex("c")).sorted)
+
   }
 }
