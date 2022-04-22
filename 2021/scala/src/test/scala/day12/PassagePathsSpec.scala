@@ -21,10 +21,12 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
     assert(vBig.isBig == true)
     assert(start.isStart == true)
     assert(end.isEnd == true)
-    assert(start.isBig == false)
-    assert(end.isBig == false)
     
+    assert(start.isBig == false)
+    assert(start.isSmall == false) 
 
+    assert(end.isBig == false)
+    assert(end.isSmall == false)
   }
 
   test("load data") {
@@ -54,27 +56,20 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
       val alWithLargeCaves = addPathsForLargeCaves(al)
       val findNeighboursForA = Vertex("A")
       val pathForVertex = List(Vertex("start"), Vertex("A"), Vertex("c"), Vertex("A"))
-      val visited = Set((findNeighboursForA, Vertex("c")))
-
-      val result = foo(findNeighboursForA, pathForVertex, alWithLargeCaves, visited).sorted
+      val visited = Set((pathForVertex, Vertex("c")))
+      val result = addLegalNeighbours(findNeighboursForA, pathForVertex, alWithLargeCaves, visited).sorted
       val expected = List((Vertex("end"), pathForVertex :+ Vertex("end")),
                           (Vertex("b"), pathForVertex :+ Vertex("b"))).sorted
 
-
       assert(expected == result)
 
-  }
-  test ("should buils a list of neighbours that if small have not been visited") {
-    val al: AdjacencyList = Map("A" -> List(Vertex("b"), Vertex("c"))) 
-    val neighbours = addLegalNeighbours(Vertex("A"), List(Vertex("start")), al, Set((Vertex("A"),Vertex("c"))))
-    println(s"Neighbours $neighbours")   
   }
   test ("should findPaths") {
     val _data = loadData("/day12/test.txt")
     val al = makeAdjacencyList(_data)
     val alWithLargeCaves = addPathsForLargeCaves(al)
-    val paths = findPathsII(alWithLargeCaves)
-    //assert(paths == 3)
+    val paths = findPaths(alWithLargeCaves)
+    assert(paths == 10)
 
   }
   test ("should find Vertex that are connected to by large caves") {
