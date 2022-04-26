@@ -39,8 +39,9 @@ object PassagePaths extends App:
 
 
   def findPaths(adjacencyList: AdjacencyList): Int =
-
+  
     def _findPaths(queue: List[(Vertex, List[Vertex])], completed: Set[List[Vertex]], depth: Int = 0): Int =
+      if depth >= 100 then return completed.size 
       queue match {
         case Nil => println(s"Completed paths: ${completed.toList.map(l => l.map(_.v).mkString("/"))}"); completed.size
         case (v, ps) :: vs => {
