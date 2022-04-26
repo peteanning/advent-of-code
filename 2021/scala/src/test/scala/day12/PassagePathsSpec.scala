@@ -25,18 +25,29 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
     assert(end.isEnd == true)
     
     assert(start.isBig == false)
-    assert(start.isSmall == false) 
+    //assert(start.isSmall == false) 
 
     assert(end.isBig == false)
-    assert(end.isSmall == false)
+    //assert(end.isSmall == false)
 
     val HG = Vertex("HG")
     assert(HG.isBig)
+    assert(HG.isSmall == false)
+
+    val dc = Vertex("dc")
+    assert(dc.isSmall)
   }
 
   test("load data") {
     assert(("start", "A") == data(0))
     assert(("b", "end") == data(6))
+  }
+
+  test ("should make case class AdjacencyList") {
+    val adjacencyList = AdjacencyList(dataTest2)
+    val neighbours = adjacencyList.neighbours(Vertex("start"))
+    val expected = List(Vertex("HN"), Vertex("kj"), Vertex("dc")).sorted
+    assert(expected == neighbours)
   }
 
   test ("should make paths face away from the start and towards the end") {
@@ -76,20 +87,49 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
       assert(expected == result)
 
   }
-  test ("should findPaths") {
-    val _data = loadData("/day12/test.txt")
-    val al = makeAdjacencyList(_data)
-    val alWithLargeCaves = addPathsForLargeCaves(al)
-    val paths = findPaths(alWithLargeCaves)
-    assert(paths == 10)
+
+  test ("should visit small caves at most once in a path to the end II") {
+      val al = AdjacencyList(data)
+      val findNeighboursForA = Vertex("A")
+      val pathForVertex = List(Vertex("start"), Vertex("A"), Vertex("c"), Vertex("A"))
+      val visited = Set((pathForVertex, Vertex("c")))
+      val result = addLegalNeighboursII(findNeighboursForA, pathForVertex, al).sorted
+      val expected = List((Vertex("end"), pathForVertex :+ Vertex("end")),
+                          (Vertex("b"), pathForVertex :+ Vertex("b"))).sorted
+
+      assert(expected == result)
 
   }
 
-  test ("should findPaths in test 2") {
-    val al = makeAdjacencyList(dataTest2)
+  test ("Graph should be cyclic") {
+    val al = AdjacencyList(data)
+    val neighboursA = al.neighbours(Vertex("A"))
+    val expectedA = List(Vertex("end"), Vertex("c"), Vertex("b")).sorted
+    assert(expectedA == neighboursA)
+
+    val expected_c = List(Vertex("A"))
+    val neighbours_c = al.neighbours(Vertex("c"))
+    assert(expected_c == neighbours_c)
+  }
+
+  test ("should findPaths") {
+    val al = makeAdjacencyList(data)
     val alWithLargeCaves = addPathsForLargeCaves(al)
-    //val paths = findPaths(alWithLargeCaves)
-    //assert(paths == 19)
+    val paths = findPaths(alWithLargeCaves)
+    assert(paths == 10)
+  }
+  
+  test ("should findPaths II") {
+    val al = AdjacencyList(data)
+    val paths = findPathsII(al)
+    assert(paths == 10)
+  }
+
+
+  test ("should findPaths in test 2") {
+    val al = AdjacencyList(dataTest2)
+    val paths = findPathsII(al)
+  //  assert(paths == 19)
 
   }
   test ("should find Vertex that are connected to by large caves") {
