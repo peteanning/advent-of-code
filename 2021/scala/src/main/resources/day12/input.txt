@@ -16,4 +16,4 @@ end-ve
 ve-SM
 TG-uq
 end-SM
-SM-uq1:
+SM-uq
