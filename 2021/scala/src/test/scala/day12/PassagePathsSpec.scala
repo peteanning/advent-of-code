@@ -5,6 +5,8 @@ import PassagePaths._
 class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
 
   def data: List[(String, String)] = loadData("/day12/test.txt")
+  def dataTest2: List[(String, String)] = loadData("/day12/test-2.txt")
+  def dataTest3: List[(String, String)] = loadData("/day12/test-3.txt")
   def loadPaths(fileName: String): List[List[Vertex]] =
     val source = io.Source.fromInputStream(getClass.getResourceAsStream(fileName))
     val text = try source.getLines.toList finally source.close
@@ -27,12 +29,22 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
 
     assert(end.isBig == false)
     assert(end.isSmall == false)
+
+    val HG = Vertex("HG")
+    assert(HG.isBig)
   }
 
   test("load data") {
     assert(("start", "A") == data(0))
     assert(("b", "end") == data(6))
   }
+
+  test ("should make paths face away from the start and towards the end") {
+    assert(("start", "HN") == dataTest2(1))
+    assert(("zg", "end") == dataTest3(5))
+  }
+
+
   test ("should return an adjacency list from raw data") {
    val al = makeAdjacencyList(data)
    assert(al("start") == List(Vertex("A"), Vertex("b")).sorted)
@@ -57,7 +69,7 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
       val findNeighboursForA = Vertex("A")
       val pathForVertex = List(Vertex("start"), Vertex("A"), Vertex("c"), Vertex("A"))
       val visited = Set((pathForVertex, Vertex("c")))
-      val result = addLegalNeighbours(findNeighboursForA, pathForVertex, alWithLargeCaves, visited).sorted
+      val result = addLegalNeighbours(findNeighboursForA, pathForVertex, alWithLargeCaves).sorted
       val expected = List((Vertex("end"), pathForVertex :+ Vertex("end")),
                           (Vertex("b"), pathForVertex :+ Vertex("b"))).sorted
 
@@ -70,6 +82,14 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
     val alWithLargeCaves = addPathsForLargeCaves(al)
     val paths = findPaths(alWithLargeCaves)
     assert(paths == 10)
+
+  }
+
+  test ("should findPaths in test 2") {
+    val al = makeAdjacencyList(dataTest2)
+    val alWithLargeCaves = addPathsForLargeCaves(al)
+    //val paths = findPaths(alWithLargeCaves)
+    //assert(paths == 19)
 
   }
   test ("should find Vertex that are connected to by large caves") {
