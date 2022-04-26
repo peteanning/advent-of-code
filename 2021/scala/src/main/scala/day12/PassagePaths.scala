@@ -11,12 +11,7 @@ object PassagePaths extends App:
   def loadData(fileName: String): List[(String, String)] =
     val source = io.Source.fromInputStream(getClass.getResourceAsStream(fileName))
     val text = try source.getLines.toList finally source.close()
-    text.map(line => line.split('-')).map { line =>
-      if line(1) == "start" || line(0) == "end" then
-        (line(1), line(0))
-      else
-        (line(0), line(1))
-                            }
+    text.map(line => line.split('-')).map(line => (line(0), line(1)))
 
   def makeAdjacencyList(data: List[(String, String)]): Map[String, List[Vertex]] =
     (data.groupMap((m,n) => m)((x,y) => Vertex(y))).mapValues(l => l.sorted).toMap
@@ -95,14 +90,15 @@ object PassagePaths extends App:
 
 case class AdjacencyList(lists: List[(String, String)]):
   def neighbours(vertex: Vertex): List[Vertex] =
-    val withLargeCaves: List[(String, String)] = lists.foldLeft(List.empty){
-      (acc, v) =>
-        if Vertex(v._1).isBig && !lists.exists((v1, v2) => v1 == v._2 && v2 == v._1) then
-          (acc :+ (v._1, v._2)) :+ (v._2, v._1)
-        else
-          acc :+ (v._1, v._2)
-    }
-    withLargeCaves.filter((k, n) => k == vertex.v).map((k, n) => Vertex(n)).sorted
+    lists.map{ (v1, v2) =>
+      if v1 == vertex.v then
+        Some(Vertex(v2))
+      else if v2 == vertex.v then
+        Some(Vertex(v1))
+      else
+        None
+    }.filterNot(_ == None).map(m => m.get).sorted
+
 
 case class Vertex(v: String):
   val isBig = v.forall(_.isUpper)

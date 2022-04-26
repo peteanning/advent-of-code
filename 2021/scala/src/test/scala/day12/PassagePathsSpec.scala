@@ -43,18 +43,25 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
     assert(("b", "end") == data(6))
   }
 
+  test ("should load test 2 data") {
+    assert(("dc", "end") == dataTest2(0))
+    assert(("HN", "start") == dataTest2(1))
+    assert(("start", "kj") == dataTest2(2))
+    assert(("dc", "start") == dataTest2(3))
+    assert(("dc", "HN") == dataTest2(4))
+    assert(("LN", "dc") == dataTest2(5))
+    assert(("HN", "end") == dataTest2(6))
+    assert(("kj", "sa") == dataTest2(7))
+    assert(("kj", "HN") == dataTest2(8))
+    assert(("kj", "dc") == dataTest2(9))
+  }
+
   test ("should make case class AdjacencyList") {
     val adjacencyList = AdjacencyList(dataTest2)
     val neighbours = adjacencyList.neighbours(Vertex("start"))
     val expected = List(Vertex("HN"), Vertex("kj"), Vertex("dc")).sorted
     assert(expected == neighbours)
   }
-
-  test ("should make paths face away from the start and towards the end") {
-    assert(("start", "HN") == dataTest2(1))
-    assert(("zg", "end") == dataTest3(5))
-  }
-
 
   test ("should return an adjacency list from raw data") {
    val al = makeAdjacencyList(data)
@@ -104,7 +111,7 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
   test ("Graph should be cyclic") {
     val al = AdjacencyList(data)
     val neighboursA = al.neighbours(Vertex("A"))
-    val expectedA = List(Vertex("end"), Vertex("c"), Vertex("b")).sorted
+    val expectedA = List(Vertex("end"), Vertex("c"), Vertex("b"), Vertex("start")).sorted
     assert(expectedA == neighboursA)
 
     val expected_c = List(Vertex("A"))
@@ -125,11 +132,16 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
     assert(paths == 10)
   }
 
+  test ("should findPaths in test 3") {
+    val al = AdjacencyList(dataTest3)
+    val paths = findPathsII(al)
+    assert(paths == 226)
+  }
 
   test ("should findPaths in test 2") {
     val al = AdjacencyList(dataTest2)
     val paths = findPathsII(al)
-  //  assert(paths == 19)
+    assert(paths == 19)
 
   }
   test ("should find Vertex that are connected to by large caves") {
