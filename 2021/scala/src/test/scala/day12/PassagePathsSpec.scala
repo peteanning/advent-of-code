@@ -21,10 +21,15 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
 
     assert(v.isBig == false)
     assert(vBig.isBig == true)
-    assert(start.isStart == true)
+    
     assert(end.isEnd == true)
-    assert(start.isBig == false)
     assert(end.isBig == false)
+    assert(end.isSmall == false)
+    
+    assert(start.isStart == true)
+    assert(start.isBig == false)
+    assert(start.isSmall == false)
+
 
     val HG = Vertex("HG")
     assert(HG.isBig)
@@ -37,6 +42,13 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
   test("load data") {
     assert(("start", "A") == data(0))
     assert(("b", "end") == data(6))
+  }
+
+  test ("should get all the small Vertex in a graph") {
+    val smalls = AdjacencyList(data).smalls.sorted
+    val expected = List(Vertex("b"), Vertex("c"), Vertex("d")).sorted
+    assert(expected == smalls)
+
   }
 
   test ("should load test 2 data") {
@@ -65,18 +77,26 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
   }  
 
 
-  test ("should visit small caves at most once in a path to the end II") {
+  test ("should visit small caves at most once in a path to the end") {
       val al = AdjacencyList(data)
       val findNeighboursForA = Vertex("A")
       val pathForVertex = List(Vertex("start"), Vertex("A"), Vertex("c"), Vertex("A"))
-      val visited = Set((pathForVertex, Vertex("c")))
-      val result = addLegalNeighboursII(findNeighboursForA, pathForVertex, al).sorted
+      val result = addLegalNeighbours(findNeighboursForA, pathForVertex, al).sorted
       val expected = List((Vertex("end"), pathForVertex :+ Vertex("end")),
                           (Vertex("b"), pathForVertex :+ Vertex("b"))).sorted
-
       assert(expected == result)
-
   }
+
+  test ("should visit small caves at most twice in a path to the end") {
+      val al = AdjacencyList(data)
+      val findNeighboursForA = Vertex("d")
+      val pathForVertex = List(Vertex("start"), Vertex("A"), Vertex("b"), Vertex("d"))
+      val result = addLegalNeighboursII(findNeighboursForA, pathForVertex, al, Some(Vertex("b"))).sorted
+      val expected = List((Vertex("b"), pathForVertex :+ Vertex("b"))).sorted
+      assert(expected == result)
+  }
+
+
 
   test ("Graph should be cyclic") {
     val al = AdjacencyList(data)
@@ -91,21 +111,41 @@ class PassagePathsSpec extends org.scalatest.funsuite.AnyFunSuite {
 
   test ("should findPaths test 1") {
     val al = AdjacencyList(data)
-    val paths = findPathsII(al)
+    val paths = findPaths(al)
     assert(paths == 10)
   }
 
   test ("should findPaths in test 2") {
     val al = AdjacencyList(dataTest2)
-    val paths = findPathsII(al)
+    val paths = findPaths(al)
     assert(paths == 19)
 
   }
 
   test ("should findPaths in test 3") {
     val al = AdjacencyList(dataTest3)
-    val paths = findPathsII(al)
+    val paths = findPaths(al)
     assert(paths == 226)
   }
+
+  test ("should findPaths test 1 Part2") {
+    val al = AdjacencyList(data)
+    val paths = findPathsPart2(al)
+    assert(paths == 36)
+  }
+
+  test ("should findPaths in test 2 Part2") {
+    val al = AdjacencyList(dataTest2)
+    val paths = findPathsPart2(al)
+    assert(paths == 103)
+
+  }
+
+  test ("should findPaths in test 3 Part2") {
+    val al = AdjacencyList(dataTest3)
+    val paths = findPathsPart2(al)
+    assert(paths == 3509)
+  }
+
 
 }
