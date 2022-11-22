@@ -29,3 +29,4 @@ cabal.project.local~
 **/target
 **/.bloop
 **target
+.DS_Store
