@@ -30,3 +30,8 @@ cabal.project.local~
 **/.bloop
 **target
 .DS_Store
+
+
+# Added by cargo
+
+/target

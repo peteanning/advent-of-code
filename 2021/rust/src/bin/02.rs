@@ -1,5 +1,19 @@
+#![allow(unused)]
+
+enum cmd {
+  UP, DOWN, LEFT, RIGHT
+}
+
+struct command {
+  cmd: cmd,
+  value: u32
+}
+
+
 pub fn part_one(input: &str) -> Option<u32> {
-    None
+    input.lines().map(|s| s.)
+
+  
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
@@ -19,7 +33,7 @@ mod tests {
     #[test]
     fn test_part_one() {
         let input = aoc::read_file("examples", 2);
-        assert_eq!(part_one(&input), None);
+        assert_eq!(part_one(&input), Some(150));
     }
 
     #[test]
