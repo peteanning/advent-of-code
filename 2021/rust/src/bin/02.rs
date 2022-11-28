@@ -11,7 +11,9 @@ struct command {
 
 
 pub fn part_one(input: &str) -> Option<u32> {
-    input.lines().map(|s| s.)
+    let cmdStr = input.lines().map(|s| 
+                      let v: Vec<String> = s.split(" ").collect();
+                      (v(0), v(1));
 
   
 }
