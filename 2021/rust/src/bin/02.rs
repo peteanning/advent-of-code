@@ -28,8 +28,8 @@ pub fn part_one(input: &str) -> Option<u32> {
                       .map(|v| Command::new(v[0], v[1]))
                       .fold((0,0), |acc, cmd| {
                         match cmd {
-                            Command {cmd: Cmd::UP, value: n} => (acc.0 + n, acc.1),
-                            Command {cmd: Cmd::DOWN, value: n} => (acc.0 - n, acc.1),
+                            Command {cmd: Cmd::UP, value: n} => (acc.0 - n, acc.1),
+                            Command {cmd: Cmd::DOWN, value: n} => (acc.0 + n, acc.1),
                             Command {cmd: Cmd::FORWARD, value: n} => (acc.0, acc.1 + n)
                         }
                       });
@@ -62,6 +62,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = aoc::read_file("examples", 2);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(900));
     }
 }
