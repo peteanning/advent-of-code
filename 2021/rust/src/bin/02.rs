@@ -40,7 +40,20 @@ pub fn part_one(input: &str) -> Option<u32> {
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    None
+        // (Depth, Horizontal_Pos, Aim)
+        let result = input.lines()
+                      .map(|s| s.split(' ').collect::<Vec<&str>>())
+                      .map(|v| Command::new(v[0], v[1]))
+                      .fold((0,0,0), |acc, cmd| {
+                        match cmd {
+                            Command {cmd: Cmd::UP, value: n} => (acc.0, acc.1, acc.2 - n),
+                            Command {cmd: Cmd::DOWN, value: n} => (acc.0, acc.1, acc.2 + n),
+                            Command {cmd: Cmd::FORWARD, value: n} => (acc.0 + (acc.2 * n), acc.1 + n, acc.2)
+                        }
+                      });
+
+    Some(result.0 * result.1)
+
 }
 
 fn main() {
