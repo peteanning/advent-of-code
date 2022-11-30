@@ -1,19 +1,40 @@
-#![allow(unused)]
 
-enum cmd {
-  UP, DOWN, LEFT, RIGHT
+enum Cmd {
+  UP, DOWN, FORWARD
 }
 
-struct command {
-  cmd: cmd,
+struct Command {
+  cmd: Cmd,
   value: u32
 }
 
+impl Command {
+    fn new(cmd: &str, n: &str) -> Command { //todo make this a Result<Command, Err>
+         match cmd {
+             "up" => Command { cmd: Cmd::UP, value: n.parse().unwrap()  },
+             "down" => Command { cmd: Cmd::DOWN, value: n.parse().unwrap()  },
+             "forward" => Command { cmd: Cmd::FORWARD, value: n.parse().unwrap()  },
+             _ => Command { cmd: Cmd::UP, value: 0 } // this is a cludge should be an error
+        }
+    }
+    
+}
 
 pub fn part_one(input: &str) -> Option<u32> {
-    let cmdStr = input.lines().map(|s| 
-                      let v: Vec<String> = s.split(" ").collect();
-                      (v(0), v(1));
+
+
+    let result = input.lines()
+                      .map(|s| s.split(' ').collect::<Vec<&str>>())
+                      .map(|v| Command::new(v[0], v[1]))
+                      .fold((0,0), |acc, cmd| {
+                        match cmd {
+                            Command {cmd: Cmd::UP, value: n} => (acc.0 + n, acc.1),
+                            Command {cmd: Cmd::DOWN, value: n} => (acc.0 - n, acc.1),
+                            Command {cmd: Cmd::FORWARD, value: n} => (acc.0, acc.1 + n)
+                        }
+                      });
+
+    Some(result.0 * result.1)
 
   
 }
