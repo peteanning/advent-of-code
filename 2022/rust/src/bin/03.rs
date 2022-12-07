@@ -1,51 +1,47 @@
 use std::collections::HashMap;
 
 
-fn init() -> HashMap<char, u8> {
+fn build_score_maps() -> HashMap<char, u8> {
 
  let lowers: HashMap<char, u8>  = (b'a'..=b'z').map(char::from).zip((1..=26).map(u8::from)).collect::<HashMap<_,_>>();
  let uppers: HashMap<char, u8> = (b'A'..=b'Z').map(char::from).zip((27..=52).map(u8::from)).collect::<HashMap<_,_>>();
 
-  lowers.into_iter().chain(uppers).collect()
-
-
+ lowers.into_iter().chain(uppers).collect()
 }
+
 pub fn part_one(input: &str) -> Option<u32> {
     use itertools::Itertools;
 
-    let scores = init();
+    let scores: HashMap<char, u8> = build_score_maps();
 
     let chars: Vec<Vec<char>> = input
         .lines()
         .into_iter()
         .map(|s| s.chars().collect::<Vec<char>>()).collect();
-        //dbg!(&chars);
-//    let halves: Vec<Vec<&[char]>> = 
-//        chars.iter().map(|v| v.chunks(2).collect()).collect();
-      let halves: Vec<Vec<Vec<char>>> = chars.into_iter().map(|l| l.chunks(l.len()/2).map(|x| x.to_vec()).collect()).collect();
-      dbg!(&halves);
-      let mut filtered: Vec<Vec<char>> = halves
+
+    let halves: Vec<Vec<Vec<char>>> = chars.into_iter().map(|l| l.chunks(l.len()/2).map(|x| x.to_vec()).collect()).collect();
+    let mut filtered: Vec<Vec<char>> = halves
           .into_iter()
           .map(|line: Vec<Vec<char>>| {
                line[0]
                    .clone()
                    .into_iter()
                    .filter(|c| line[1].contains(c)) 
-                   .unique()
+                   .unique() // only need oneinstance of the duplicate values filtering gives all of them!
                    .collect()
 
           }
               )
           .collect(); 
-       // only need oneinstance of the duplicate values filtering gives all of them!
-       dbg!(&filtered);
 
-       let numbers: u32 = Iterator::flatten( filtered
+    let total: u32 = Iterator::flatten( filtered
            .iter_mut()
            .map(|v| v.iter_mut()
-                .map(|c| *scores.get(c).unwrap() as u32).collect::<Vec<u32>>())).fold(0, |acc, n| acc + n);
+                .map(|c| *scores.get(c).unwrap() as u32)
+                .collect::<Vec<u32>>()))
+           .fold(0, |acc, n| acc + n); // using fold as sum
 
-    Some(numbers)
+    Some(total)
 
 }
 
