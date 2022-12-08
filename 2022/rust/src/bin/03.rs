@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use itertools::Itertools;
+
 
 fn build_score_maps() -> HashMap<char, u8> {
 
@@ -10,7 +12,6 @@ fn build_score_maps() -> HashMap<char, u8> {
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
-    use itertools::Itertools;
 
     let scores: HashMap<char, u8> = build_score_maps();
 
@@ -45,8 +46,37 @@ pub fn part_one(input: &str) -> Option<u32> {
 
 }
 
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<u32> {
+    let scores: HashMap<char, u8> = build_score_maps();
+
+    let chars: Vec<Vec<char>> = input
+        .lines()
+        .into_iter()
+        .map(|s| s.chars().collect::<Vec<char>>()).collect();
+
+    let groups_of_three: Vec<Vec<Vec<char>>> = chars.chunks(3).map(|x| x.to_vec()).collect();
+
+
+    let  mut filtered: Vec<Vec<char>> = groups_of_three.into_iter()
+                                       .map(|three| three[0]
+                                                    .clone()
+                                                    .into_iter()
+                                                    .filter(|c| three[1].contains(c) && three[2].contains(c))
+                                                    .unique()
+                                                    .collect::<Vec<char>>())
+                                       .collect();
+
+
+    let total: u32 = Iterator::flatten( filtered
+           .iter_mut()
+           .map(|v| v.iter_mut()
+                .map(|c| *scores.get(c).unwrap() as u32)
+                .collect::<Vec<u32>>()))
+           .fold(0, |acc, n| acc + n); // using fold as sum
+
+
+
+    Some(total)
 }
 
 fn main() {
@@ -68,6 +98,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = advent_of_code::read_file("examples", 3);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(70));
     }
 }
