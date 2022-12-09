@@ -18,10 +18,13 @@ impl ElfRange {
         this.start >= that.start && this.end <= that.end 
     }
 
-    fn overlaps(this: &ElfRange, that: &ElfRange) -> bool {
-        this.end >= that.start && this.start <= that.end 
+    fn overlaps(this: &ElfRange, that: &ElfRange) -> u8 {
+       if this.end >= that.start && this.start <= that.end {
+           1
+       } else {
+           0
+       }
     }
-
 }
 
 fn parse_lines(input: &str) -> Vec<(ElfRange, ElfRange)>{
@@ -49,8 +52,8 @@ pub fn part_one(input: &str) -> Option<u32> {
 pub fn part_two(input: &str) -> Option<u32> {
          let count: u32 = parse_lines(input)
             .iter()
-            .map(|e| ElfRange::overlaps(&e.0, &e.1))
-                    .fold(0, |acc, b| if b { acc + 1 } else {acc});
+            .map(|e| ElfRange::overlaps(&e.0, &e.1) as u32)
+            .sum();
 
     Some(count)
 
@@ -103,8 +106,8 @@ mod tests {
         let range_1 = ElfRange::new("5-7");
         let range_2 = ElfRange::new("7-9");
 
-        assert!(ElfRange::overlaps(&range_1, &range_2));
-        assert!(ElfRange::overlaps(&range_2, &range_1));
+        assert_eq!(ElfRange::overlaps(&range_1, &range_2), 1);
+        assert_eq!(ElfRange::overlaps(&range_2, &range_1), 1);
     }
 
     #[test]
@@ -112,7 +115,7 @@ mod tests {
         let range_1 = ElfRange::new("1-4");
         let range_2 = ElfRange::new("2-3");
 
-        assert!(ElfRange::overlaps(&range_1, &range_2));
+        assert_eq!(ElfRange::overlaps(&range_1, &range_2), 1);
     }
     
     #[test]
@@ -120,7 +123,7 @@ mod tests {
         let range_1 = ElfRange::new("1-4");
         let range_2 = ElfRange::new("5-6");
 
-        assert!(!ElfRange::overlaps(&range_1, &range_2));
+        assert_eq!(ElfRange::overlaps(&range_1, &range_2), 0);
     }
 
 
