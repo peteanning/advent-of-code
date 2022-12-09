@@ -20,7 +20,6 @@ impl ElfRange {
 
     fn overlaps(this: &ElfRange, that: &ElfRange) -> bool {
         this.end >= that.start && this.start <= that.end 
-            //|| ElfRange::contains(this, that)
     }
 
 }
