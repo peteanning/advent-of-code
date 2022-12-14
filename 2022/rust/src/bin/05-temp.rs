@@ -14,14 +14,27 @@ impl<'a> Data<'a> {
     fn new(stacks_vec: Vec<&'a str>, column_headers_vec: Vec<u8>, moves_vec: Vec<Move>) -> Data<'a> {
         Data { stacks: stacks_vec, stack_headers: column_headers_vec, moves: moves_vec }
     }
+
+   //https://users.rust-lang.org/t/idiomatic-naming-when-a-name-clashes-with-a-keyword/32472 
+    fn execute_move(&self, mve: Move) -> &Data<'a> {
+        let mut from = self.stacks[mve.from];
+        let mut to = self.stacks[mve.to];
+        
+        //mutate the from and to
+
+        //copy the stack to a new stack with the new from and to values
+
+
+        &Data::new(stacks_vec, column_headers_vec, moves_vec)
+    }
 }
 
 #[derive(Debug)]
 #[derive(PartialEq)]
 struct Move {
-    from: u8,
-    to: u8,
-    quantity: u8
+    from: usize,
+    to: usize,
+    quantity: usize
 }
 impl Move {
     fn new (f: u8, t: u8, q: u8) -> Move {
@@ -114,6 +127,10 @@ fn main() {
 mod tests {
     use super::*;
 
+    fn ROWS() -> Vec<String> {
+        vec![ String::from("    [D]    "), String::from("[N] [C]    "), String::from("[Z] [M] [P]")]
+    }
+
     #[test]
     fn test_part_one() {
         let input = advent_of_code::read_file("examples", 5);
@@ -121,10 +138,17 @@ mod tests {
     }
     
     #[test]
-    fn test_parse_rows() {
-        let rows: Vec<String> = vec!["    [D]    ".to_string(), "[N] [C]    ".to_string(), "[Z] [M] [P]".to_string()];
+    fn test_execute_move() {
         let expected: Vec<Vec<char>> = vec![vec!['Z', 'N'], vec!['M', 'C', 'D'], vec!['P']];
-        assert_eq!(parse_stacks(&rows, 3), expected);
+        let mve = Move::new(1, 2, 1);
+        assert_eq!(Data::execute_move(data, mve), expected);
+    }
+
+
+    #[test]
+    fn test_parse_rows() {
+        let expected: Vec<Vec<char>> = vec![vec!['Z', 'N'], vec!['M', 'C', 'D'], vec!['P']];
+        assert_eq!(parse_stacks(&ROWS(), 3), expected);
     }
 
 
