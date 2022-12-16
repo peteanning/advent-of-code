@@ -4,28 +4,30 @@ use itertools::Itertools;
 
 #[derive(Debug)]
 #[derive(PartialEq)]
-struct Data<'a> {
-    stacks: Vec<&'a str>,
-    stack_headers: Vec<u8>,
+struct Data {
+    stacks: Vec<Vec<char>>,
+    stack_headers: Vec<usize>,
     moves: Vec<Move>
 }
 
-impl<'a> Data<'a> {
-    fn new(stacks_vec: Vec<&'a str>, column_headers_vec: Vec<u8>, moves_vec: Vec<Move>) -> Data<'a> {
+impl Data {
+    fn new(stacks_vec: Vec<Vec<char>>, column_headers_vec: Vec<usize>, moves_vec: Vec<Move>) -> Data {
         Data { stacks: stacks_vec, stack_headers: column_headers_vec, moves: moves_vec }
     }
+
+   
 }
 
 #[derive(Debug)]
 #[derive(PartialEq)]
 struct Move {
-    from: u8,
-    to: u8,
-    quantity: u8
+    from: usize,
+    to: usize,
+    quantity: usize
 }
 impl Move {
-    fn new (f: u8, t: u8, q: u8) -> Move {
-        Move{ from: f, to: t, quantity: q}
+    fn new (from_: usize, to_: usize, q: usize) -> Move {
+        Move{ from: from_, to: to_, quantity: q}
     }
     fn new_from_line(line: &str) -> Move {
         //move 1 from 2 to 1
@@ -35,11 +37,27 @@ impl Move {
             .replace(" to ", ":")
             .split(":")
             .filter(|s| *s != "")
-            .map(|s| s.trim().parse::<u8>().unwrap())
-            .collect::<Vec<u8>>();
+            .map(|s| s.trim().parse::<usize>().unwrap())
+            .collect::<Vec<usize>>();
 
-        Move { from: moves[0], to: moves[1], quantity: moves[2] }
+        Move { from: moves[1], to: moves[2], quantity: moves[0] }
     }
+}
+    //https://users.rust-lang.org/t/idiomatic-naming-when-a-name-clashes-with-a-keyword/32472 
+fn execute_move(mut data: Data, mve: Move) -> Vec<Vec<char>> {
+    let mut from = data.stacks[(mve.from - 1)].clone();
+    let mut to = data.stacks[(mve.to - 1)].clone();
+   //mutate the from and to
+    for _i in 1..=mve.quantity {
+        to.push(from.pop().unwrap());
+    }
+ 
+    //copy the stack to a new stack with the new from and to values
+    let _x = std::mem::replace(&mut data.stacks[(mve.from - 1)], from);
+    let _y = std::mem::replace(&mut data.stacks[(mve.to - 1)], to);
+
+    
+    data.stacks
 }
 
 // copied from https://github.com/beny23/advent-of-code/
@@ -58,18 +76,18 @@ fn parse_stacks(crate_strs: &Vec<String>, size: usize) -> Vec<Vec<char>> {
 }
 
 
-fn parse_headers(line: &str) -> Vec<u8> {
+fn parse_headers(line: &str) -> Vec<usize> {
     line
         .trim()
         .split(" ")
         .filter(|s| *s != "")
-        .map(|s| s.parse::<u8>().unwrap())
+        .map(|s| s.parse::<usize>().unwrap())
         .collect()
 }
 
 fn parse_input(input: &str) -> Data {
-    let mut rows: Vec<&str> = vec![];
-    let mut column_headers: Vec<u8> = vec![];
+    let mut rows: Vec<String> = vec![];
+    let mut column_headers: Vec<usize> = vec![];
     let mut moves: Vec<Move> = vec![];
 
     input
@@ -77,7 +95,7 @@ fn parse_input(input: &str) -> Data {
         .into_iter()
         .for_each(|l| {
             if l.contains("[") {
-               rows.push(l);
+               rows.push(l.to_string());
             } else if l.starts_with(" 1") {
                 column_headers = parse_headers(l);
             } else if l.starts_with("move") {
@@ -87,12 +105,12 @@ fn parse_input(input: &str) -> Data {
             }
         });
 
-    dbg!(&rows);
-    dbg!(&column_headers);
-    dbg!(&moves);
+    //dbg!(&rows);
+    //dbg!(&column_headers);
+    //dbg!(&moves);
 
 
-    Data::new(rows, column_headers, moves)
+    Data::new(parse_stacks(&rows, *column_headers.last().unwrap()), column_headers, moves)
 }
 
 
@@ -114,6 +132,10 @@ fn main() {
 mod tests {
     use super::*;
 
+    fn ROWS() -> Vec<String> {
+        vec![ String::from("    [D]    "), String::from("[N] [C]    "), String::from("[Z] [M] [P]")]
+    }
+
     #[test]
     fn test_part_one() {
         let input = advent_of_code::read_file("examples", 5);
@@ -121,10 +143,19 @@ mod tests {
     }
     
     #[test]
+    fn test_execute_one_move() {
+        let input = advent_of_code::read_file("examples", 5);
+        let expected: Vec<Vec<char>> = vec![vec!['Z', 'N', 'D'], vec!['M', 'C'], vec!['P']];
+        let mve = Move { from: 2, to: 1, quantity: 1 };
+
+        assert_eq!(execute_move(parse_input(&input), mve), expected);
+    }
+
+
+    #[test]
     fn test_parse_rows() {
-        let rows: Vec<String> = vec!["    [D]    ".to_string(), "[N] [C]    ".to_string(), "[Z] [M] [P]".to_string()];
         let expected: Vec<Vec<char>> = vec![vec!['Z', 'N'], vec!['M', 'C', 'D'], vec!['P']];
-        assert_eq!(parse_stacks(&rows, 3), expected);
+        assert_eq!(parse_stacks(&ROWS(), 3), expected);
     }
 
 
@@ -137,12 +168,12 @@ mod tests {
     #[test]
     fn test_parse_move() {
         let move_line = "move 1 from 2 to 1";
-        assert_eq!(Move::new_from_line(move_line), Move::new(1, 2, 1));
+        assert_eq!(Move::new_from_line(move_line), Move::new(2, 1, 1));
     }
-    #[test]
+//    #[test]
     fn test_parse_data() {
         
-        let columns: Vec<&str> = vec!["    [D]    ", "[N] [C]    ", "[Z] [M] [P]"];
+        let columns: Vec<Vec<char>> = vec![vec!['Z', 'N'], vec!['M', 'C', 'D'], vec!['P']];
         let column_headers = vec![1,2,3];
         let moves = vec![Move::new(1, 2, 1), Move::new(3,1, 3), Move::new(2,2,1), Move::new(1, 1, 2)];
 
