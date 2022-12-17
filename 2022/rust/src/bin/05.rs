@@ -1,7 +1,3 @@
-use std::collections::HashMap;
-
-use itertools::Itertools;
-
 #[derive(Debug)]
 #[derive(PartialEq)]
 struct Data {
@@ -14,8 +10,6 @@ impl Data {
     fn new(stacks_vec: Vec<Vec<char>>, column_headers_vec: Vec<usize>, moves_vec: Vec<Move>) -> Data {
         Data { stacks: stacks_vec, stack_headers: column_headers_vec, moves: moves_vec }
     }
-
-   
 }
 
 #[derive(Debug)]
@@ -25,6 +19,7 @@ struct Move {
     to: usize,
     quantity: usize
 }
+
 impl Move {
     fn new (from_: usize, to_: usize, q: usize) -> Move {
         Move{ from: from_, to: to_, quantity: q}
@@ -43,22 +38,31 @@ impl Move {
         Move { from: moves[1], to: moves[2], quantity: moves[0] }
     }
 }
-    //https://users.rust-lang.org/t/idiomatic-naming-when-a-name-clashes-with-a-keyword/32472 
-fn execute_move(mut data: Data, mve: Move) -> Vec<Vec<char>> {
-    let mut from = data.stacks[(mve.from - 1)].clone();
-    let mut to = data.stacks[(mve.to - 1)].clone();
-   //mutate the from and to
+
+fn execute_moves(mut data: Data) -> Vec<Vec<char>>  {
+
+    for m in data.moves {
+        execute_one_move(&mut data.stacks, m);
+    }
+    data.stacks
+
+}
+
+//https://users.rust-lang.org/t/idiomatic-naming-when-a-name-clashes-with-a-keyword/32472 
+fn execute_one_move(stacks: &mut Vec<Vec<char>>, mve: Move)  {
+    let mut from = stacks[(mve.from - 1)].clone();
+    let mut to = stacks[(mve.to - 1)].clone();
+
+
     for _i in 1..=mve.quantity {
         to.push(from.pop().unwrap());
     }
  
-    //copy the stack to a new stack with the new from and to values
-    let _x = std::mem::replace(&mut data.stacks[(mve.from - 1)], from);
-    let _y = std::mem::replace(&mut data.stacks[(mve.to - 1)], to);
-
+    let _x = std::mem::replace(&mut stacks[(mve.from - 1)], from);
+    let _y = std::mem::replace(&mut stacks[(mve.to - 1)], to);
     
-    data.stacks
 }
+
 
 // copied from https://github.com/beny23/advent-of-code/
 fn parse_stacks(crate_strs: &Vec<String>, size: usize) -> Vec<Vec<char>> {
@@ -105,17 +109,26 @@ fn parse_input(input: &str) -> Data {
             }
         });
 
-    //dbg!(&rows);
-    //dbg!(&column_headers);
-    //dbg!(&moves);
+    dbg!(&rows);
+    dbg!(&column_headers);
+    dbg!(&moves);
 
-
+    moves.reverse();
     Data::new(parse_stacks(&rows, *column_headers.last().unwrap()), column_headers, moves)
 }
 
 
-pub fn part_one(input: &str) -> Option<u32> {
-    None
+pub fn part_one(input: &str) -> Option<String> {
+   let data: Data =  parse_input(input);
+   let stacks = execute_moves(data);
+
+   let mut result: String = "".to_string();
+
+   for v in stacks {
+    result.push(v.last().unwrap().to_owned()); 
+   }
+
+   Some(result)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
@@ -137,18 +150,34 @@ mod tests {
     }
 
     #[test]
+    fn test_part_one_main() {
+        let input = advent_of_code::read_file("inputs", 5);
+        assert_eq!(part_one(&input), Some("CMZ".to_string()));
+    }
+ 
+    #[test]
     fn test_part_one() {
         let input = advent_of_code::read_file("examples", 5);
-        assert_eq!(part_one(&input), None);
+        assert_eq!(part_one(&input), Some("CMZ".to_string()));
     }
     
+    #[test]
+    fn test_example_part_one() {
+        let input = advent_of_code::read_file("examples", 5);
+        let expected: Vec<Vec<char>> = vec![vec!['C'], vec!['M'], vec!['P', 'D', 'N', 'Z']];
+
+        assert_eq!(execute_moves(parse_input(&input)), expected);
+    }
+
     #[test]
     fn test_execute_one_move() {
         let input = advent_of_code::read_file("examples", 5);
         let expected: Vec<Vec<char>> = vec![vec!['Z', 'N', 'D'], vec!['M', 'C'], vec!['P']];
         let mve = Move { from: 2, to: 1, quantity: 1 };
+        let mut data: Data = parse_input(&input);
 
-        assert_eq!(execute_move(parse_input(&input), mve), expected);
+        execute_one_move(&mut data.stacks, mve);
+        assert_eq!(data.stacks, expected);
     }
 
 
@@ -170,12 +199,12 @@ mod tests {
         let move_line = "move 1 from 2 to 1";
         assert_eq!(Move::new_from_line(move_line), Move::new(2, 1, 1));
     }
-//    #[test]
+    #[test]
     fn test_parse_data() {
         
         let columns: Vec<Vec<char>> = vec![vec!['Z', 'N'], vec!['M', 'C', 'D'], vec!['P']];
         let column_headers = vec![1,2,3];
-        let moves = vec![Move::new(1, 2, 1), Move::new(3,1, 3), Move::new(2,2,1), Move::new(1, 1, 2)];
+        let moves = vec![Move::new(1, 2, 1), Move::new(2,1, 2), Move::new(1,3,3), Move::new(2, 1, 1)];
 
         let input = advent_of_code::read_file("examples", 5);
 
