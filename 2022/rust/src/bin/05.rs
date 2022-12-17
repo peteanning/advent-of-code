@@ -25,7 +25,6 @@ impl Move {
         Move{ from: from_, to: to_, quantity: q}
     }
     fn new_from_line(line: &str) -> Move {
-        //move 1 from 2 to 1
         let moves = line
             .replace("move ", ":")
             .replace(" from ", ":")
@@ -40,7 +39,7 @@ impl Move {
 }
 
 fn execute_moves(mut data: Data) -> Vec<Vec<char>>  {
-
+    
     for m in data.moves {
         execute_one_move(&mut data.stacks, m);
     }
@@ -52,7 +51,6 @@ fn execute_moves(mut data: Data) -> Vec<Vec<char>>  {
 fn execute_one_move(stacks: &mut Vec<Vec<char>>, mve: Move)  {
     let mut from = stacks[(mve.from - 1)].clone();
     let mut to = stacks[(mve.to - 1)].clone();
-
 
     for _i in 1..=mve.quantity {
         to.push(from.pop().unwrap());
@@ -109,11 +107,6 @@ fn parse_input(input: &str) -> Data {
             }
         });
 
-    dbg!(&rows);
-    dbg!(&column_headers);
-    dbg!(&moves);
-
-    moves.reverse();
     Data::new(parse_stacks(&rows, *column_headers.last().unwrap()), column_headers, moves)
 }
 
@@ -149,12 +142,6 @@ mod tests {
         vec![ String::from("    [D]    "), String::from("[N] [C]    "), String::from("[Z] [M] [P]")]
     }
 
-    #[test]
-    fn test_part_one_main() {
-        let input = advent_of_code::read_file("inputs", 5);
-        assert_eq!(part_one(&input), Some("CMZ".to_string()));
-    }
- 
     #[test]
     fn test_part_one() {
         let input = advent_of_code::read_file("examples", 5);
@@ -204,7 +191,7 @@ mod tests {
         
         let columns: Vec<Vec<char>> = vec![vec!['Z', 'N'], vec!['M', 'C', 'D'], vec!['P']];
         let column_headers = vec![1,2,3];
-        let moves = vec![Move::new(1, 2, 1), Move::new(2,1, 2), Move::new(1,3,3), Move::new(2, 1, 1)];
+        let moves = vec![Move::new(2, 1, 1), Move::new(1,3, 3), Move::new(2,1,2), Move::new(1, 2, 1)];
 
         let input = advent_of_code::read_file("examples", 5);
 
