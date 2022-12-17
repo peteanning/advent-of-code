@@ -38,23 +38,40 @@ impl Move {
     }
 }
 
-fn execute_moves(mut data: Data) -> Vec<Vec<char>>  {
+fn execute_moves(mut data: Data, f: fn(&mut Vec<Vec<char>>, Move)) -> Vec<Vec<char>>  {
     
     for m in data.moves {
-        execute_one_move(&mut data.stacks, m);
+        f(&mut data.stacks, m);
     }
     data.stacks
 
 }
 
 //https://users.rust-lang.org/t/idiomatic-naming-when-a-name-clashes-with-a-keyword/32472 
-fn execute_one_move(stacks: &mut Vec<Vec<char>>, mve: Move)  {
+fn move_crates_one_at_a_time(stacks: &mut Vec<Vec<char>>, mve: Move)  {
     let mut from = stacks[(mve.from - 1)].clone();
     let mut to = stacks[(mve.to - 1)].clone();
 
     for _i in 1..=mve.quantity {
         to.push(from.pop().unwrap());
     }
+ 
+    let _x = std::mem::replace(&mut stacks[(mve.from - 1)], from);
+    let _y = std::mem::replace(&mut stacks[(mve.to - 1)], to);
+    
+}
+
+fn move_crates_in_group(stacks: &mut Vec<Vec<char>>, mve: Move)  {
+    let mut from = stacks[(mve.from - 1)].clone();
+    let mut to = stacks[(mve.to - 1)].clone();
+    let mut group: Vec<char> = vec![];
+
+
+    for _i in 1..=mve.quantity {
+        group.push(from.pop().unwrap());
+    }
+    group.reverse();
+    to.append(&mut group);
  
     let _x = std::mem::replace(&mut stacks[(mve.from - 1)], from);
     let _y = std::mem::replace(&mut stacks[(mve.to - 1)], to);
@@ -110,22 +127,28 @@ fn parse_input(input: &str) -> Data {
     Data::new(parse_stacks(&rows, *column_headers.last().unwrap()), column_headers, moves)
 }
 
-
-pub fn part_one(input: &str) -> Option<String> {
-   let data: Data =  parse_input(input);
-   let stacks = execute_moves(data);
-
+fn stack_tops_as_string(stacks: &Vec<Vec<char>>) -> Option<String> {
    let mut result: String = "".to_string();
 
    for v in stacks {
     result.push(v.last().unwrap().to_owned()); 
    }
-
    Some(result)
+    
+}
+pub fn part_one(input: &str) -> Option<String> {
+   let data: Data =  parse_input(input);
+   let stacks = execute_moves(data, move_crates_one_at_a_time);
+
+   stack_tops_as_string(&stacks)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<String> {
+
+   let data: Data =  parse_input(input);
+   let stacks = execute_moves(data, move_crates_in_group);
+
+    stack_tops_as_string(&stacks)
 }
 
 fn main() {
@@ -147,13 +170,19 @@ mod tests {
         let input = advent_of_code::read_file("examples", 5);
         assert_eq!(part_one(&input), Some("CMZ".to_string()));
     }
+
+    #[test]
+    fn test_part_two() {
+        let input = advent_of_code::read_file("examples", 5);
+        assert_eq!(part_two(&input), Some("MCD".to_string()));
+    }
     
     #[test]
     fn test_example_part_one() {
         let input = advent_of_code::read_file("examples", 5);
         let expected: Vec<Vec<char>> = vec![vec!['C'], vec!['M'], vec!['P', 'D', 'N', 'Z']];
 
-        assert_eq!(execute_moves(parse_input(&input)), expected);
+        assert_eq!(execute_moves(parse_input(&input), move_crates_one_at_a_time), expected);
     }
 
     #[test]
@@ -163,7 +192,7 @@ mod tests {
         let mve = Move { from: 2, to: 1, quantity: 1 };
         let mut data: Data = parse_input(&input);
 
-        execute_one_move(&mut data.stacks, mve);
+        move_crates_one_at_a_time(&mut data.stacks, mve);
         assert_eq!(data.stacks, expected);
     }
 
@@ -199,9 +228,5 @@ mod tests {
         assert_eq!(parse_input(&input), data);
     }
 
-    #[test]
-    fn test_part_two() {
-        let input = advent_of_code::read_file("examples", 5);
-        assert_eq!(part_two(&input), None);
-    }
+    
 }
