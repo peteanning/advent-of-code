@@ -1,88 +1,95 @@
 use itertools::Itertools;
 
-#[derive(PartialEq)]
-#[derive(Debug)]
-struct File<'a> {
-    name: &'a str,
-    size: usize
-}
-impl<'a> File<'a>  {
-    fn new_from_cmdline(line: &str) -> File{
-       let (size_, name_) = line.split(" ").next_tuple().unwrap();
-       File { name: name_, size: size_.parse::<usize>().unwrap() }
-    }    
-}
+type NodeId = usize;
 
 #[derive(PartialEq)]
 #[derive(Debug)]
-struct NewFile {
+pub enum FileSystemType {
+   d,f 
+}
+pub struct FileSystemNode {
     name: String,
-    size: usize
+    size: Option<usize>,
+    file_system_type: FileSystemType
 }
 
-impl NewFile  {
-    fn new_from_cmdline(line: &str) -> NewFile{
-       let (size_, name_) = line.split(" ").next_tuple().unwrap();
-       NewFile { name: name_.to_string(), size: size_.parse::<usize>().unwrap() }
-    }    
-}
-
-
-#[derive(PartialEq)]
-#[derive(Debug)]
-struct NewDir {
-    directories: Vec<NewDir>,
-    files: Vec<NewFile>,
-    name: String
-}
-
-impl NewDir {
-    fn new(line: &str) -> NewDir {
-        NewDir { directories: vec![], files: vec![], name: directory_name_from_line(line).to_string() }
+impl FileSystemNode {
+    fn new(name: String, size: Option<usize>, file_system_type: FileSystemType) -> FileSystemNode {
+       match (size, &file_system_type) {
+           (Some(_), FileSystemType::d) => panic!("bad size"),
+           (None, FileSystemType::f ) => panic!("bad size"),
+           _ => FileSystemNode { name, size, file_system_type } 
+       }
     }
 
-    fn cd_up(&mut self) -> NewDir {
-       if self.directories.len() >= 1 {
-            self.directories.pop().unwrap()
+    fn new_dir(name: String) -> FileSystemNode {
+        FileSystemNode::new(name, None, FileSystemType::d)
+    }
+    
+    fn new_from_line(line: &str) -> FileSystemNode {
+       let (first_part, name_) = line.split(" ").next_tuple().unwrap();
+       if first_part.starts_with("dir") {
+            FileSystemNode::new_dir(first_part.to_string())
        } else {
-           panic!("There are no directories in the tree!");
+           FileSystemNode::new(name_.to_string(), first_part.parse::<usize>().ok(), FileSystemType::f)
        }
     }
 }
 
-
-#[derive(PartialEq)]
-#[derive(Debug)]
-struct Dir<'a> {
-    directories: Vec<&'a Dir<'a>>,
-    files: Vec<File<'a>>,
-    name: &'a str
+pub struct FileSystem {
+    nodes: Vec<Node<FileSystemNode>>
 }
 
-impl<'a> Dir<'a> {
-    fn new(line: &str) -> Dir {
-        Dir { directories: vec![], files: vec![], name: directory_name_from_line(line) }
+pub struct Node<T> {
+
+    parent: Option<NodeId>,
+    previous_sibling: Option<NodeId>,
+    next_sibling: Option<NodeId>,
+    first_child: Option<NodeId>,
+    last_child: Option<NodeId>,
+    data: T,
+}
+
+impl FileSystem {
+    fn new_node(&mut self, data: FileSystemNode) -> NodeId {
+        let next_index = self.nodes.len();
+
+        self.nodes.push(Node { 
+            parent: None, 
+            previous_sibling: None, 
+            next_sibling: None, 
+            first_child: None, 
+            last_child: None, 
+            data });
+
+        next_index
     }
 
-    fn cd_up(&mut self) -> &Dir {
-       if self.directories.len() >= 1 {
-            self.directories.pop().unwrap()
-       } else {
-           panic!("There are no directories in the tree!");
-       }
-    }
-}
+    fn add_child(&mut self, parent: NodeId, data: FileSystemNode) -> NodeId {
+        let next_index = self.nodes.len();
+     
+        self.nodes.push(Node { 
+            parent: Some(parent), 
+            previous_sibling: None, 
+            next_sibling: None, 
+            first_child: None, 
+            last_child: None, 
+            data });
 
-#[derive(PartialEq)]
-#[derive(Debug)]
-enum Cmd {
-    Ls, Cd, CdUp
-}
-#[derive(PartialEq)]
-#[derive(Debug)]
-struct TerminalOuput<'a> {
-    cmd: Cmd,
-    name: Option<&'a str>
+        next_index   
+    }
+
+    fn get_parent_for_id(&self, id: NodeId) -> Option<NodeId> {
+        if self.nodes.len() > id {
+            self.nodes[id].parent
+        } else {
+            None
+        }
+    }
+
+    fn new() -> FileSystem {
+        FileSystem { nodes: Vec::new() }
+    }
 }
 
 fn directory_name_from_line(line: &str) -> &str { 
@@ -95,68 +102,39 @@ fn directory_name_from_line(line: &str) -> &str {
 
 }
 
-impl<'a> TerminalOuput<'a> {
-    fn new_from_cmdline(line: &str) -> TerminalOuput {
-         let start = &line[0..=0];
-         let cmd = &line[2..=3];
-         let name = directory_name_from_line(line);
-         dbg!(line);
-         dbg!(&start);
-         dbg!(&cmd);
-         dbg!(&name);
-
-            match (start, cmd, name) {
-                ("$", "cd", "..") => TerminalOuput { cmd: Cmd::CdUp, name: None},
-                ("$", "ls", _) => TerminalOuput { cmd: Cmd::Ls, name: None},
-                ("$", "cd", _) => TerminalOuput { cmd: Cmd::Cd, name: Some(name)},
-                _ => panic!("Unknown Command {}", line)
-            }
-    }
-}
-
-
-
-    
-
-fn new_parse_input(input: &str) -> NewDir {
-    let mut cwd: NewDir = NewDir::new("Unitialised");
-    let mut state: &str = "Unitialised";
+pub fn parse_input(input: &str) -> FileSystem {
+    let mut file_system = FileSystem::new();
 
     let lines = 
         input
         .lines()
         .into_iter();
+    
+    let mut cwd_id: usize = 0;
+
 
     for line in lines {
-        if line.starts_with("$") { // cmd state
-           let terminal_output: TerminalOuput = TerminalOuput::new_from_cmdline(line);
-           match terminal_output {
-               TerminalOuput { cmd: Cmd::Ls, name: None } => state = "WaitingLs",
-               TerminalOuput { cmd: Cmd::Cd, name: Some(dir) } => {
-                   state = "InDir"; 
-                   cwd = NewDir { directories: vec![], files: vec![], name: dir.to_string() };
-               },
-               TerminalOuput { cmd: Cmd::CdUp, name: None } => state = "InDir",
-               _ => panic!("Unknown cmd line {}", line)
-               
-           }
-        } else if state == "WaitingLs" {
-            //parse the line as a listing
-            if line.starts_with("dir") {
-                // create a dir and push it into the cwd
-                cwd.directories.push(NewDir::new(line));
-            } else { // file
-                // create a file and push it into the cwd
-                cwd.files.push(NewFile::new_from_cmdline(line));
+        if line.starts_with("$") { // in cmd mode
+            if line.starts_with("$ cd ..") { // change dir up
+                // get the parent id of the cwd and set it as the cwd
+                cwd_id = file_system.get_parent_for_id(cwd_id).unwrap();
+            } else if line.starts_with("$ cd") { // new dir
+                cwd_id = file_system.new_node(FileSystemNode::new_dir(directory_name_from_line(line).to_string()));
+            } else { // ls for cwd
+                continue;
             }
+        } else { // in a listing
+            // parse the line as a FileSystemNode and add it to the cwd
+            file_system.new_node(FileSystemNode::new_from_line(line));
         }
-    }
+    } //for line in lines
 
-    cwd
+    file_system
 }
 
 
 pub fn part_one(input: &str) -> Option<u32> {
+
     None
 }
 
@@ -173,21 +151,11 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_part_one() {
-        let input = advent_of_code::read_file("examples", 7);
-        assert_eq!(part_one(&input), None);
+    
+    fn root_dir() -> FileSystemNode {
+        FileSystemNode::new_dir("/".to_string())
     }
 
-
-    #[test]
-    fn test_new_file() {
-        let line = "12345 a.txt";
-        let expected_file = File { name: "a.txt", size: 12345};
-
-        assert_eq!(File::new_from_cmdline(line), expected_file);
-    }
     #[test]
     fn test_directory_name_from_line() {
         let dir_line = "dir bla";
@@ -203,16 +171,59 @@ mod tests {
 
     }
 
-    #[test]
-    fn test_new_from_cmdline() {
-        let change_dir_line = "$ cd someDir";
-        let change_dir_up_line = "$ cd ..";
-        let ls_line = "$ ls";
 
-        assert_eq!(TerminalOuput::new_from_cmdline(change_dir_line), TerminalOuput { cmd: Cmd::Cd, name: Some("someDir")})  ;
-        assert_eq!(TerminalOuput::new_from_cmdline(change_dir_up_line), TerminalOuput { cmd: Cmd::CdUp, name: None})  ;
-        assert_eq!(TerminalOuput::new_from_cmdline(ls_line), TerminalOuput { cmd: Cmd::Ls, name: None})  ;
-        
+    #[test]
+    fn test_new_file_system_node() {
+        let dir = root_dir();
+
+        assert_eq!(dir.name, "/".to_string());
+        assert_eq!(dir.size, None);
+        assert_eq!(dir.file_system_type, FileSystemType::d);
+    }
+
+    #[test]
+    #[should_panic(expected = "bad size")]
+    fn test_new_valid_file_system_node() {
+       FileSystemNode::new("test".to_string(), None, FileSystemType::f); 
+       FileSystemNode::new("test".to_string(), Some(1234), FileSystemType::d); 
+       FileSystemNode::new_from_line("bad-size a.txt"); 
+    }
+
+
+    #[test]
+    fn test_new_file_system() {
+        let file_system = FileSystem::new(); 
+        assert_eq!(file_system.nodes.len(), 0);
+    }
+   
+    #[test]
+    fn test_new_node() {
+        let mut file_system = FileSystem::new(); 
+        let id = file_system.new_node(root_dir());
+
+        assert_eq!(file_system.nodes.len(), 1);
+    }
+
+
+    #[test]
+    fn test_add_child() {
+        let mut file_system = FileSystem::new(); 
+        let id = file_system.new_node(root_dir());
+        let child_id_1 = file_system.add_child(id, FileSystemNode::new("a.txt".to_string(), Some(1000), FileSystemType::f));
+        let child_id_2 = file_system.add_child(id, FileSystemNode { name: "b".to_string(), size: None, file_system_type: FileSystemType::d });
+
+        assert_eq!(file_system.nodes.len(), 3);
+
+        assert_eq!(Some(id), file_system.get_parent_for_id(child_id_1));
+        assert_eq!(Some(id), file_system.get_parent_for_id(child_id_2));
+    }
+
+
+
+    #[test]
+    fn test_part_one() {
+        let input = advent_of_code::read_file("examples", 7);
+        assert_eq!(part_one(&input), None);
     }
 
     #[test]
