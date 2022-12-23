@@ -5,7 +5,7 @@ type NodeId = usize;
 #[derive(PartialEq)]
 #[derive(Debug)]
 pub enum FileSystemType {
-   d,f 
+   D,F 
 }
 
 #[derive(Debug)]
@@ -19,14 +19,14 @@ impl FileSystemNode {
     fn new(name: String, size: usize, file_system_type: FileSystemType) -> FileSystemNode {
        let maybe_size: Option<usize> = if size == 0 { None } else { Some(size) };
        match (maybe_size, &file_system_type) {
-           (Some(_), FileSystemType::d) => panic!("bad size"),
-           (None, FileSystemType::f ) => panic!("bad size"),
+           (Some(_), FileSystemType::D) => panic!("bad size"),
+           (None, FileSystemType::F ) => panic!("bad size"),
            _ => FileSystemNode { name, size, file_system_type } 
        }
     }
 
     fn new_dir(name: String) -> FileSystemNode {
-        FileSystemNode::new(name, 0, FileSystemType::d)
+        FileSystemNode::new(name, 0, FileSystemType::D)
     }
     
     fn new_from_line(line: &str) -> FileSystemNode {
@@ -34,7 +34,7 @@ impl FileSystemNode {
        if first_part.starts_with("dir") {
             FileSystemNode::new_dir(name_.to_string())
        } else {
-           FileSystemNode::new(name_.to_string(), first_part.parse::<usize>().unwrap(), FileSystemType::f)
+           FileSystemNode::new(name_.to_string(), first_part.parse::<usize>().unwrap(), FileSystemType::F)
        }
     }
 }
@@ -46,7 +46,6 @@ pub struct FileSystem {
 
 #[derive(Debug)]
 pub struct Node<T> {
-    id: NodeId,
     parent: Option<NodeId>,
     data: T,
 }
@@ -56,7 +55,6 @@ impl FileSystem {
         let next_index = self.nodes.len();
          
         self.nodes.push(Node { 
-            id: next_index,
             parent: None, 
             data });
 
@@ -78,7 +76,6 @@ impl FileSystem {
         FileSystem::update_parents(self, parent, data.size);
 
         self.nodes.push(Node { 
-            id: next_index,
             parent: Some(parent), 
             data });
 
@@ -137,7 +134,7 @@ pub fn parse_input(input: &str) -> FileSystem {
         input
         .lines()
         .into_iter();
-    let root_dir = file_system.new_node(FileSystemNode::new("/".to_string(), 0, FileSystemType::d)); 
+    let root_dir = file_system.new_node(FileSystemNode::new("/".to_string(), 0, FileSystemType::D)); 
     let mut cwd_id: usize = root_dir;
 
 
@@ -149,7 +146,7 @@ pub fn parse_input(input: &str) -> FileSystem {
             } else if line.starts_with("$ cd /") { 
                 cwd_id = root_dir;
             } else if line.starts_with("$ cd") { // new root dir
-                cwd_id = file_system.get_node_id_for(directory_name_from_line(line).to_string(), FileSystemType::d, Some(cwd_id)).unwrap();
+                cwd_id = file_system.get_node_id_for(directory_name_from_line(line).to_string(), FileSystemType::D, Some(cwd_id)).unwrap();
             } else { // ls for cwd
                 continue;
             }
@@ -168,7 +165,7 @@ pub fn part_one(input: &str) -> Option<usize> {
     let sum: usize = 
         parse_input(&input)
         .iter()
-        .filter(|n| n.data.file_system_type == d)
+        .filter(|n| n.data.file_system_type == D)
         .filter(|n| n.data.size <= 100000)
         .map(|n| n.data.size)
         .fold(0, |acc, s| acc + s);
@@ -196,7 +193,7 @@ pub fn part_two(input: &str) -> Option<usize> {
     
 
     let result: usize = file_system.iter()
-        .filter(|n| n.data.file_system_type == d)
+        .filter(|n| n.data.file_system_type == D)
         .map(|n| n.data.size)
         .filter(|s| s >= &space_required)
         .sorted_by(|a,b| a.cmp(b))[0];
@@ -240,14 +237,14 @@ mod tests {
 
         assert_eq!(dir.name, "/".to_string());
         assert_eq!(dir.size, 0);
-        assert_eq!(dir.file_system_type, FileSystemType::d);
+        assert_eq!(dir.file_system_type, FileSystemType::D);
     }
 
     #[test]
     #[should_panic(expected = "bad size")]
     fn test_new_valid_file_system_node() {
-       FileSystemNode::new("test".to_string(), 0, FileSystemType::f); 
-       FileSystemNode::new("test".to_string(), 1234, FileSystemType::d); 
+       FileSystemNode::new("test".to_string(), 0, FileSystemType::F); 
+       FileSystemNode::new("test".to_string(), 1234, FileSystemType::D); 
        FileSystemNode::new_from_line("bad-size a.txt"); 
     }
 
@@ -261,7 +258,7 @@ mod tests {
     #[test]
     fn test_new_node() {
         let mut file_system = FileSystem::new(); 
-        let id = file_system.new_node(root_dir());
+        file_system.new_node(root_dir());
 
         assert_eq!(file_system.nodes.len(), 1);
     }
@@ -271,7 +268,7 @@ mod tests {
         let dir = FileSystemNode::new_from_line("dir d");
 
         assert_eq!(dir.name, "d".to_string());
-        assert_eq!(dir.file_system_type, FileSystemType::d);
+        assert_eq!(dir.file_system_type, FileSystemType::D);
         assert_eq!(dir.size, 0);
     }
 
@@ -281,8 +278,8 @@ mod tests {
     fn test_add_child() {
         let mut file_system = FileSystem::new(); 
         let id = file_system.new_node(root_dir());
-        let child_id_1 = file_system.add_child(id, FileSystemNode::new("a.txt".to_string(), 1000, FileSystemType::f));
-        let child_id_2 = file_system.add_child(id, FileSystemNode { name: "b".to_string(), size: 0, file_system_type: FileSystemType::d });
+        let child_id_1 = file_system.add_child(id, FileSystemNode::new("a.txt".to_string(), 1000, FileSystemType::F));
+        let child_id_2 = file_system.add_child(id, FileSystemNode { name: "b".to_string(), size: 0, file_system_type: FileSystemType::D });
 
         assert_eq!(file_system.nodes.len(), 3);
 
@@ -297,17 +294,17 @@ mod tests {
 
         assert_eq!(file_system.iter().count(), 14);
 
-        let e_id = file_system.get_node_id_for("e".to_string(), FileSystemType::d, Some(1)).unwrap();
+        let e_id = file_system.get_node_id_for("e".to_string(), FileSystemType::D, Some(1)).unwrap();
         assert_eq!(file_system.nodes[e_id].data.size, 584);
 
-        let a_id = file_system.get_node_id_for("a".to_string(), FileSystemType::d, Some(0)).unwrap();
+        let a_id = file_system.get_node_id_for("a".to_string(), FileSystemType::D, Some(0)).unwrap();
         assert_eq!(file_system.nodes[a_id].data.size, 94853);
 
-        let d_id = file_system.get_node_id_for("d".to_string(), FileSystemType::d, Some(0)).unwrap();
+        let d_id = file_system.get_node_id_for("d".to_string(), FileSystemType::D, Some(0)).unwrap();
         assert_eq!(file_system.nodes[d_id].data.size, 24933642);
 
 
-        let root_id = file_system.get_node_id_for("/".to_string(), FileSystemType::d, None).unwrap();
+        let root_id = file_system.get_node_id_for("/".to_string(), FileSystemType::D, None).unwrap();
         assert_eq!(file_system.nodes[root_id].data.size, 48381165);
 
 
@@ -320,7 +317,7 @@ mod tests {
         let input = advent_of_code::read_file("examples", 71);
         let file_system: FileSystem = parse_input(&input);
         assert_eq!(file_system.iter().count(), 15);
-        let id = file_system.get_node_id_for("a".to_string(), FileSystemType::d, Some(4)).unwrap();
+        let id = file_system.get_node_id_for("a".to_string(), FileSystemType::D, Some(4)).unwrap();
         assert_eq!(id, 10); 
 
 
@@ -330,7 +327,7 @@ mod tests {
     fn test_get_children() {
         let input = advent_of_code::read_file("examples", 7);
         let file_system: FileSystem = parse_input(&input);
-        let root_id = file_system.get_node_id_for("/".to_string(), FileSystemType::d, None);
+        let root_id = file_system.get_node_id_for("/".to_string(), FileSystemType::D, None);
 
         assert_eq!(root_id.unwrap(), 0);
         assert_eq!(file_system.iter().count(), 14);
