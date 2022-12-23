@@ -147,29 +147,28 @@ pub fn parse_input(input: &str) -> FileSystem {
 
     for line in lines {
         counter += 1;
-        println!("Line no. {} {}", counter, line);
+        //println!("Line no. {} {}", counter, line);
         if line.starts_with("$") { // in cmd mode
             if line.starts_with("$ cd ..") { // change dir up
                 // get the parent id of the cwd and set it as the cwd
                 cwd_id = file_system.get_parent_for_id(cwd_id).unwrap();
-                println!("Changing up a directorty to {}", file_system.nodes[cwd_id].data.name);
+                //println!("Changing up a directorty to {}", file_system.nodes[cwd_id].data.name);
             } else if line.starts_with("$ cd /") { 
-                println!("Changing to root");
+                //println!("Changing to root");
                 cwd_id = root_dir;
             } else if line.starts_with("$ cd") { // new root dir
                 cwd_id = file_system.get_node_id_for(directory_name_from_line(line).to_string(), FileSystemType::d, Some(cwd_id)).unwrap();
-                println!("Set cwd to directorty to {}", file_system.nodes[cwd_id].data.name);
+                //println!("Set cwd to directorty to {}", file_system.nodes[cwd_id].data.name);
             } else { // ls for cwd
-                println!("Ignoring ls");
+                //println!("Ignoring ls");
                 continue;
             }
         } else { // in a listing
             // parse the line as a FileSystemNode and add it to the cwd
             let temp_node_id =  file_system.add_child(cwd_id, FileSystemNode::new_from_line(line));
-            println!("Added {} {:?}", file_system.nodes[temp_node_id].data.name, file_system.nodes[temp_node_id].data.file_system_type );
+            //println!("Added {} {:?}", file_system.nodes[temp_node_id].data.name, file_system.nodes[temp_node_id].data.file_system_type );
         }
     } //for line in lines
-    dbg!(&file_system);
     file_system
 }
 
@@ -187,8 +186,33 @@ pub fn part_one(input: &str) -> Option<usize> {
     Some(sum)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+fn unused_space(file_system: &FileSystem) -> usize {
+    let root_dir_space: usize = file_system.nodes[0].data.size;
+    let total_available_disk_space: usize = 70000000;
+    total_available_disk_space - root_dir_space
+}
+
+fn space_required(unused_space: usize) -> usize {
+    let update_requires = 30000000;
+    update_requires - unused_space
+}
+
+pub fn part_two(input: &str) -> Option<usize> {
+    use FileSystemType::*;
+
+    let file_system = parse_input(&input);
+   
+    let unused_space = unused_space(&file_system);
+    let space_required = space_required(unused_space);
+    
+
+    let result: usize = file_system.iter()
+        .filter(|n| n.data.file_system_type == d)
+        .map(|n| n.data.size)
+        .filter(|s| s >= &space_required)
+        .sorted_by(|a,b| a.cmp(b))[0];
+
+    Some(result)
 }
 
 fn main() {
@@ -325,6 +349,21 @@ mod tests {
     }
 
     #[test]
+    fn test_unused_space() {
+        let input = advent_of_code::read_file("examples", 7);
+        let file_system: FileSystem = parse_input(&input);
+
+        assert_eq!(unused_space(&file_system), 21618835);
+    }
+
+    #[test]
+    fn test_space_required() {
+        let unused_space:usize = 21618835;
+        assert_eq!(space_required(unused_space), 8381165);
+
+    }
+
+    #[test]
     fn test_part_one() {
         let input = advent_of_code::read_file("examples", 7);
         assert_eq!(part_one(&input), Some(95437));
@@ -333,6 +372,7 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = advent_of_code::read_file("examples", 7);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(24933642));
     }
+
 }
