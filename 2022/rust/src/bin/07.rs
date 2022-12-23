@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use itertools::Itertools;
 
 type NodeId = usize;
@@ -141,32 +139,23 @@ pub fn parse_input(input: &str) -> FileSystem {
         .into_iter();
     let root_dir = file_system.new_node(FileSystemNode::new("/".to_string(), 0, FileSystemType::d)); 
     let mut cwd_id: usize = root_dir;
-    let mut counter: usize = 0;
-    let mut temp_node_id = 0;
 
 
     for line in lines {
-        counter += 1;
-        //println!("Line no. {} {}", counter, line);
         if line.starts_with("$") { // in cmd mode
             if line.starts_with("$ cd ..") { // change dir up
                 // get the parent id of the cwd and set it as the cwd
                 cwd_id = file_system.get_parent_for_id(cwd_id).unwrap();
-                //println!("Changing up a directorty to {}", file_system.nodes[cwd_id].data.name);
             } else if line.starts_with("$ cd /") { 
-                //println!("Changing to root");
                 cwd_id = root_dir;
             } else if line.starts_with("$ cd") { // new root dir
                 cwd_id = file_system.get_node_id_for(directory_name_from_line(line).to_string(), FileSystemType::d, Some(cwd_id)).unwrap();
-                //println!("Set cwd to directorty to {}", file_system.nodes[cwd_id].data.name);
             } else { // ls for cwd
-                //println!("Ignoring ls");
                 continue;
             }
         } else { // in a listing
             // parse the line as a FileSystemNode and add it to the cwd
-            let temp_node_id =  file_system.add_child(cwd_id, FileSystemNode::new_from_line(line));
-            //println!("Added {} {:?}", file_system.nodes[temp_node_id].data.name, file_system.nodes[temp_node_id].data.file_system_type );
+            file_system.add_child(cwd_id, FileSystemNode::new_from_line(line));
         }
     } //for line in lines
     file_system
