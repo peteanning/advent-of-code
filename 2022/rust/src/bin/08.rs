@@ -45,10 +45,11 @@ impl Forest {
     }
 
    pub fn ask_neighbour(&mut self, height: usize, direction: char, row: usize, col: usize) -> Option<char> {
-        let current_visibility = self.trees[row][col].is_visible;
+        let col_ = col;
+        let row_ = row;
 
-        match (current_visibility, direction) {
-            (None, 'r') => {
+        match  direction {
+            'r' => {
                     if !self.is_border_tree(row, col + 1) {
                          if self.trees[row][col + 1].height >= height {
                             None 
@@ -67,7 +68,7 @@ impl Forest {
 
             },
 
-            (None, 'l') => {
+            'l' => {
                     if !self.is_border_tree(row, col - 1) {
                          if self.trees[row][col - 1].height >= height {
                             None 
@@ -85,21 +86,64 @@ impl Forest {
                     }
 
             },
-            _ => current_visibility
+
+             'u' => {
+                    if !self.is_border_tree(row - 1, col) {
+                         if self.trees[row - 1][col].height >= height {
+                            None 
+                         } else if self.trees[row - 1][col].height < height && self.trees[row - 1][col].is_visible == Some(direction) {
+                            Some(direction)
+                        } else {
+                            self.ask_neighbour(height, direction, row - 1, col)
+                        }
+                    } else { // at the border
+                        if self.trees[row - 1][col].height < height {
+                            Some(direction)
+                        } else {
+                            None
+                        }
+                    }
+
+            },
+
+             'd' => {
+                    if !self.is_border_tree(row + 1, col) {
+                         if self.trees[row + 1][col].height >= height {
+                            None 
+                         } else if self.trees[row + 1][col].height < height && self.trees[row + 1][col].is_visible == Some(direction) {
+                            Some(direction)
+                        } else {
+                            self.ask_neighbour(height, direction, row + 1, col)
+                        }
+                    } else { // at the border
+                        if self.trees[row + 1][col].height < height {
+                            Some(direction)
+                        } else {
+                            None
+                        }
+                    }
+
+            },
+            s => panic!("Unknow processing direction {}", s)
             
         }
 
    }
 
    pub fn set_visibilities(&mut self) {
+       let directions = vec!['r', 'l', 'u', 'd'];
+
         for i in 1..self.trees.len() - 1 {
            for j in 1..self.trees[i].len() - 1 {
-                self.trees[i][j].is_visible = self.ask_neighbour(self.trees[i][j].height, 'r', i, j);
-                self.trees[i][j].is_visible = self.ask_neighbour(self.trees[i][j].height, 'l', i, j);
-
+                for direction in &directions {
+                    if self.trees[i][j].is_visible == None {
+                        self.trees[i][j].is_visible = self.ask_neighbour(self.trees[i][j].height, *direction, i, j);
+                    }
+                }
             }
         }
-    }
+
+   }
         
 }
 
