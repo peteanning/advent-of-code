@@ -45,87 +45,30 @@ impl Forest {
     }
 
    pub fn ask_neighbour(&mut self, height: usize, direction: char, row: usize, col: usize) -> Option<char> {
-        let col_ = col;
-        let row_ = row;
+        let mut col_ = col;
+        let mut row_ = row;
 
-        match  direction {
-            'r' => {
-                    if !self.is_border_tree(row, col + 1) {
-                         if self.trees[row][col + 1].height >= height {
-                            None 
-                         } else if self.trees[row][col + 1].height < height && self.trees[row][col + 1].is_visible == Some(direction) {
-                            Some(direction)
-                        } else {
-                            self.ask_neighbour(height, direction, row, col + 1)
-                        }
-                    } else { // at the border
-                        if self.trees[row][col + 1].height < height {
-                            Some(direction)
-                        } else {
-                            None
-                        }
-                    }
-
-            },
-
-            'l' => {
-                    if !self.is_border_tree(row, col - 1) {
-                         if self.trees[row][col - 1].height >= height {
-                            None 
-                         } else if self.trees[row][col - 1].height < height && self.trees[row][col - 1].is_visible == Some(direction) {
-                            Some(direction)
-                        } else {
-                            self.ask_neighbour(height, direction, row, col - 1)
-                        }
-                    } else { // at the border
-                        if self.trees[row][col - 1].height < height {
-                            Some(direction)
-                        } else {
-                            None
-                        }
-                    }
-
-            },
-
-             'u' => {
-                    if !self.is_border_tree(row - 1, col) {
-                         if self.trees[row - 1][col].height >= height {
-                            None 
-                         } else if self.trees[row - 1][col].height < height && self.trees[row - 1][col].is_visible == Some(direction) {
-                            Some(direction)
-                        } else {
-                            self.ask_neighbour(height, direction, row - 1, col)
-                        }
-                    } else { // at the border
-                        if self.trees[row - 1][col].height < height {
-                            Some(direction)
-                        } else {
-                            None
-                        }
-                    }
-
-            },
-
-             'd' => {
-                    if !self.is_border_tree(row + 1, col) {
-                         if self.trees[row + 1][col].height >= height {
-                            None 
-                         } else if self.trees[row + 1][col].height < height && self.trees[row + 1][col].is_visible == Some(direction) {
-                            Some(direction)
-                        } else {
-                            self.ask_neighbour(height, direction, row + 1, col)
-                        }
-                    } else { // at the border
-                        if self.trees[row + 1][col].height < height {
-                            Some(direction)
-                        } else {
-                            None
-                        }
-                    }
-
-            },
+        match  direction { 
+            'r' => col_ = col + 1, 
+            'l' => col_ = col - 1, 
+            'u' => row_ = row - 1, 
+            'd' => row_ = row + 1, 
             s => panic!("Unknow processing direction {}", s)
-            
+        }
+        if !self.is_border_tree(row_, col_) {
+           if self.trees[row][col_].height >= height {
+              None 
+           } else if self.trees[row_][col_].height < height && self.trees[row_][col_].is_visible == Some(direction) {
+              Some(direction)
+           } else {
+            self.ask_neighbour(height, direction, row_, col_)
+           }
+         } else { // at the border
+            if self.trees[row_][col_].height < height {
+              Some(direction)
+            } else {
+              None
+           }
         }
 
    }
