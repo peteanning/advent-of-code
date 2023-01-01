@@ -85,8 +85,20 @@ impl Forest {
                 }
             }
         }
-
    }
+
+    pub fn count_visible_trees(&mut self) -> usize {
+        let mut count: usize = 0;
+
+        for i in 0..self.trees.len() {
+           for j in 0..self.trees[i].len() {
+                if self.trees[i][j].is_visible != None {
+                    count += 1;
+                }
+            }
+        }
+        count
+    }
         
 }
 
@@ -127,8 +139,11 @@ fn make_trees(raw_heights: Vec<Vec<usize>>) -> Forest {
      )
 }
 
-pub fn part_one(input: &str) -> Option<u32> {
-    None
+pub fn part_one(input: &str) -> Option<usize> {
+    let mut forest = make_trees(parse_input(&input));
+    forest.set_borders_as_visible();
+    forest.set_visibilities();
+    Some(forest.count_visible_trees())
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
@@ -284,7 +299,11 @@ mod tests {
     #[test]
     fn test_part_one() {
         let input = advent_of_code::read_file("examples", 8);
-        assert_eq!(part_one(&input), None);
+        assert_eq!(part_one(&input), Some(21));
+
+        let input2 = advent_of_code::read_file("examples", 81);
+        assert_eq!(part_one(&input2), Some(23));
+ 
     }
 
     #[test]
