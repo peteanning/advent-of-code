@@ -77,7 +77,7 @@ impl Forest {
                             self.ask_neighbour(height, direction, row, col - 1)
                         }
                     } else { // at the border
-                        if self.trees[row][col + 1].height < height {
+                        if self.trees[row][col - 1].height < height {
                             Some(direction)
                         } else {
                             None
@@ -85,7 +85,7 @@ impl Forest {
                     }
 
             },
-            _ => None
+            _ => current_visibility
             
         }
 
@@ -95,6 +95,7 @@ impl Forest {
         for i in 1..self.trees.len() - 1 {
            for j in 1..self.trees[i].len() - 1 {
                 self.trees[i][j].is_visible = self.ask_neighbour(self.trees[i][j].height, 'r', i, j);
+                self.trees[i][j].is_visible = self.ask_neighbour(self.trees[i][j].height, 'l', i, j);
 
             }
         }
@@ -269,7 +270,7 @@ mod tests {
         forest.set_borders_as_visible();
         forest.set_visibilities();
         
-        assert_eq!(forest.tree_at(1,1).map(|t| t.is_visible).flatten(), None);
+        assert_eq!(forest.tree_at(1,1).map(|t| t.is_visible).flatten(), Some('l'));
         assert_eq!(forest.tree_at(1,2).map(|t| t.is_visible).flatten(), Some('r'));
         assert_eq!(forest.tree_at(1,3).map(|t| t.is_visible).flatten(), None);
         
@@ -278,7 +279,7 @@ mod tests {
         assert_eq!(forest.tree_at(2,3).map(|t| t.is_visible).flatten(), Some('r'));
 
         assert_eq!(forest.tree_at(3,1).map(|t| t.is_visible).flatten(), None);
-        assert_eq!(forest.tree_at(3,2).map(|t| t.is_visible).flatten(), None);
+        assert_eq!(forest.tree_at(3,2).map(|t| t.is_visible).flatten(), Some('l'));
         assert_eq!(forest.tree_at(3,3).map(|t| t.is_visible).flatten(), None);
     }
 
