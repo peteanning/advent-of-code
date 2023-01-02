@@ -290,18 +290,9 @@ mod tests {
         let mut forest = make_trees(parse_input(&input));
         forest.set_borders_as_visible();
         forest.set_visibilities();
+        let count = forest.count_visible_trees();
+        assert_eq!(count, 60); // got this figure running from fspoettel's code
         
-//        assert_eq!(forest.tree_at(1,1).map(|t| t.is_visible).flatten(), Some('l'));
-//        assert_eq!(forest.tree_at(1,2).map(|t| t.is_visible).flatten(), Some('r'));
-//        assert_eq!(forest.tree_at(1,3).map(|t| t.is_visible).flatten(), None);
-//        
-//        assert_eq!(forest.tree_at(2,1).map(|t| t.is_visible).flatten(), Some('r'));
-//        assert_eq!(forest.tree_at(2,2).map(|t| t.is_visible).flatten(), None);
-//        assert_eq!(forest.tree_at(2,3).map(|t| t.is_visible).flatten(), Some('r'));
-//
-//        assert_eq!(forest.tree_at(3,1).map(|t| t.is_visible).flatten(), None);
-//        assert_eq!(forest.tree_at(3,2).map(|t| t.is_visible).flatten(), Some('l'));
-//        assert_eq!(forest.tree_at(3,3).map(|t| t.is_visible).flatten(), None);
     }
 
     #[test]
