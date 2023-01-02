@@ -56,7 +56,7 @@ impl Forest {
             unknown => panic!("Unknow processing direction {}", unknown)
         }
         if !self.is_border_tree(row_, col_) {
-           if self.trees[row][col_].height >= height {
+           if self.trees[row_][col_].height >= height {
               None 
            } else {
               self.ask_neighbour(height, direction, row_, col_)
