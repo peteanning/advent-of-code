@@ -53,21 +53,19 @@ impl Forest {
             'l' => col_ = col - 1, 
             'u' => row_ = row - 1, 
             'd' => row_ = row + 1, 
-            s => panic!("Unknow processing direction {}", s)
+            unknown => panic!("Unknow processing direction {}", unknown)
         }
         if !self.is_border_tree(row_, col_) {
            if self.trees[row][col_].height >= height {
               None 
-           } else if self.trees[row_][col_].height < height && self.trees[row_][col_].is_visible == Some(direction) {
-              Some(direction)
            } else {
-            self.ask_neighbour(height, direction, row_, col_)
+              self.ask_neighbour(height, direction, row_, col_)
            }
          } else { // at the border
-            if self.trees[row_][col_].height < height {
-              Some(direction)
-            } else {
+            if self.trees[row_][col_].height >= height {
               None
+            } else {
+              Some(direction)
            }
         }
 
@@ -93,7 +91,7 @@ impl Forest {
         for i in 0..self.trees.len() {
            for j in 0..self.trees[i].len() {
                 if self.trees[i][j].is_visible != None {
-                    count += 1;
+                    count = count + 1;
                 }
             }
         }
@@ -141,6 +139,7 @@ fn make_trees(raw_heights: Vec<Vec<usize>>) -> Forest {
 
 pub fn part_one(input: &str) -> Option<usize> {
     let mut forest = make_trees(parse_input(&input));
+    
     forest.set_borders_as_visible();
     forest.set_visibilities();
     Some(forest.count_visible_trees())
@@ -284,6 +283,26 @@ mod tests {
         assert_eq!(forest.tree_at(3,2).map(|t| t.is_visible).flatten(), Some('l'));
         assert_eq!(forest.tree_at(3,3).map(|t| t.is_visible).flatten(), None);
     }
+    
+    #[test]
+    fn test_set_visibilities2() {
+        let input = advent_of_code::read_file("examples", 82);
+        let mut forest = make_trees(parse_input(&input));
+        forest.set_borders_as_visible();
+        forest.set_visibilities();
+        
+//        assert_eq!(forest.tree_at(1,1).map(|t| t.is_visible).flatten(), Some('l'));
+//        assert_eq!(forest.tree_at(1,2).map(|t| t.is_visible).flatten(), Some('r'));
+//        assert_eq!(forest.tree_at(1,3).map(|t| t.is_visible).flatten(), None);
+//        
+//        assert_eq!(forest.tree_at(2,1).map(|t| t.is_visible).flatten(), Some('r'));
+//        assert_eq!(forest.tree_at(2,2).map(|t| t.is_visible).flatten(), None);
+//        assert_eq!(forest.tree_at(2,3).map(|t| t.is_visible).flatten(), Some('r'));
+//
+//        assert_eq!(forest.tree_at(3,1).map(|t| t.is_visible).flatten(), None);
+//        assert_eq!(forest.tree_at(3,2).map(|t| t.is_visible).flatten(), Some('l'));
+//        assert_eq!(forest.tree_at(3,3).map(|t| t.is_visible).flatten(), None);
+    }
 
     #[test]
     fn test_new_tree() {
@@ -295,6 +314,31 @@ mod tests {
         let input = advent_of_code::read_file("examples", 8);
         let v2d = vec![vec![3,0,3,7,3], vec![2,5,5,1,2], vec![6,5,3,3,2], vec![3,3,5,4,9], vec![3,5,3,9,0]];
         assert_eq!(parse_input(&input), v2d);
+    }
+
+
+    #[test]
+    fn test_bug_hunt() {
+        let input2 = advent_of_code::read_file("inputs", 8);
+        let raw_heights = parse_input(&input2);
+        assert_eq!(raw_heights.len(), 99);
+        assert_eq!(raw_heights[98].len(), 99);
+
+        let mut forest: Forest = make_trees(raw_heights);
+        forest.set_borders_as_visible();
+        //forest.set_visibilities();
+        let count = forest.count_visible_trees();
+        assert_eq!(count, (99 *2) + (97 *2));
+
+        let tree = forest.tree_at(56, 69);
+        assert_eq!(tree.unwrap().height, 9);
+        assert_eq!(tree.unwrap().is_visible, None);
+
+        
+
+
+
+
     }
     #[test]
     fn test_part_one() {
