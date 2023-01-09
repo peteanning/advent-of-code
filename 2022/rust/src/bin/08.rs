@@ -71,6 +71,31 @@ impl Forest {
 
    }
 
+    pub fn tree_count_for_direction(&mut self, height: usize, direction: char, row: usize, col: usize, acc: usize) -> usize {
+        let mut col_ = col;
+        let mut row_ = row;
+
+        match  direction { 
+            'r' => col_ = col + 1, 
+            'l' => col_ = col - 1, 
+            'u' => row_ = row - 1, 
+            'd' => row_ = row + 1, 
+            unknown => panic!("Unknow processing direction {}", unknown)
+        }
+
+        if self.is_border_tree(row_, col_) {
+            acc + 1
+        } else {
+            if self.trees[row_][col_].height < height {
+                self.tree_count_for_direction(height, direction, row_, col_, acc + 1)
+            } else {
+                acc + 1
+            }
+        }
+    }
+
+   
+
    pub fn set_visibilities(&mut self) {
        let directions = vec!['r', 'l', 'u', 'd'];
 
@@ -84,6 +109,34 @@ impl Forest {
             }
         }
    }
+
+   pub fn set_scenic_scores(&mut self) {
+       let directions = vec!['r', 'l', 'u', 'd'];
+
+        for i in 1..self.trees.len() - 1 {
+           for j in 1..self.trees[i].len() - 1 {
+                    let mut score: ScenicScore   = ScenicScore { up: 0, down: 0, left: 0, right: 0 }; 
+                    score.up = self.tree_count_for_direction(self.trees[i][j].height, 'u', i, j, 0);
+                    score.down = self.tree_count_for_direction(self.trees[i][j].height, 'd', i, j, 0);
+                    score.left = self.tree_count_for_direction(self.trees[i][j].height, 'l', i, j, 0);
+                    score.right = self.tree_count_for_direction(self.trees[i][j].height, 'r', i, j, 0);
+                    self.trees[i][j].scenic_score = score.score();
+            }
+        }
+   }
+
+    pub fn find_max_scenic_score(&mut self) -> usize {
+        let mut max_score: usize = 0;
+
+        for i in 0..self.trees.len() {
+           for j in 0..self.trees[i].len() {
+                if self.trees[i][j].scenic_score > max_score {
+                    max_score = self.trees[i][j].scenic_score;
+                }
+            }
+        }
+        max_score
+    }
 
     pub fn count_visible_trees(&mut self) -> usize {
         let mut count: usize = 0;
@@ -100,16 +153,30 @@ impl Forest {
         
 }
 
+pub struct ScenicScore {
+    pub up: usize,
+    pub down: usize,
+    pub left: usize,
+    pub right: usize
+}
+
+impl ScenicScore {
+    pub fn score(self) -> usize {
+        self.up * self.down * self.left * self.right
+    }
+}
+
 #[derive(PartialEq)]
 #[derive(Debug)]
 pub struct Tree {
     pub height: usize,
-    pub is_visible: Option<char>
+    pub is_visible: Option<char>,
+    pub scenic_score: usize
 }
 
 impl Tree {
     pub fn new(h: usize) -> Tree {
-       Tree { height: h, is_visible: None } 
+       Tree { height: h, is_visible: None, scenic_score: 0 } 
     }
 }
 
@@ -145,8 +212,13 @@ pub fn part_one(input: &str) -> Option<usize> {
     Some(forest.count_visible_trees())
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<usize> {
+
+    let mut forest = make_trees(parse_input(&input));
+   
+    forest.set_scenic_scores();
+    Some(forest.find_max_scenic_score())
+        
 }
 
 fn main() {
@@ -297,7 +369,7 @@ mod tests {
 
     #[test]
     fn test_new_tree() {
-        assert_eq!(Tree::new(1), Tree { height: 1, is_visible: None });
+        assert_eq!(Tree::new(1), Tree { height: 1, is_visible: None, scenic_score: 0 });
     }
 
     #[test]
@@ -324,13 +396,8 @@ mod tests {
         let tree = forest.tree_at(56, 69);
         assert_eq!(tree.unwrap().height, 9);
         assert_eq!(tree.unwrap().is_visible, None);
-
-        
-
-
-
-
     }
+
     #[test]
     fn test_part_one() {
         let input = advent_of_code::read_file("examples", 8);
@@ -341,9 +408,21 @@ mod tests {
  
     }
 
+
+    #[test]
+    fn test_scenic_score() {
+        let input = advent_of_code::read_file("examples", 8);
+        let mut forest = make_trees(parse_input(&input));
+
+        forest.set_scenic_scores();
+        assert_eq!(forest.tree_at(1,2).unwrap().height, 5);
+        assert_eq!(forest.tree_at(1,2).unwrap().scenic_score, 4);
+
+    }
+
     #[test]
     fn test_part_two() {
         let input = advent_of_code::read_file("examples", 8);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(8));
     }
 }
