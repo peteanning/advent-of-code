@@ -13,26 +13,6 @@ pub fn parse_input(input: &str) -> Vec<(&str, &str)> {
                    .unwrap()).collect()
 }
 
-pub fn is_diagonal(h: Point, t: Point) -> bool{
-    is_up_right(h,t)|| is_down_right(h, t) || is_up_left(h, t) || is_down_left(h, t) 
-}
-
-pub fn is_up_right(h: Point, t: Point) -> bool {
-    h.0 - 1 == t.0 - 1 && h.1 + 1 == t.1 + 1
-}
-
-pub fn is_down_right(h: Point, t: Point) -> bool {
-    h.0 + 1 == t.0 + 1 && h.1 + 1 == t.1 + 1
-}
-
-pub fn is_up_left(h: Point, t: Point) -> bool {
-    h.0 - 1 == t.0 - 1 && h.1 - 1  == t.1 - 1
-}
-
-pub fn is_down_left(h: Point, t: Point) -> bool{
-    h.0 + 1 == t.0 + 1 && h.1 - 1 == t.1 - 1 
-}
-
 pub fn not_touching_not_same_row_and_col(h: Point, t: Point) -> bool {
    //up 2 left || right
     (h.0 == t.0 - 2 && (h.1 == t.1 - 1 || h.1 == t.1 + 1)) ||
@@ -109,10 +89,7 @@ pub fn part_one(input: &str) -> Option<usize> {
        let m = c.1.parse::<usize>().unwrap();
        let cmd = c.0.chars().nth(0).unwrap();
        let mut local_tail = global_tail;
-       println!("== {:?} ==",c );
-       for i in 1..=m {
-           println!("moving {}", i);
-           let mut local_head = global_head; 
+       for _ in 1..=m {
             match cmd {
                 'D' => {
                     global_head = (global_head.0 + 1, global_head.1);
@@ -138,14 +115,10 @@ pub fn part_one(input: &str) -> Option<usize> {
              }
 
              if not_touching_not_same_row_and_col(global_head, global_tail) {
-                    println!("Not Touching same row and column");
                     global_tail = move_diagonal(global_head, global_tail);
                     moves.insert(global_tail);
              }
-
-             println!("Head at {:?} Tail at {:?}", global_head, global_tail);
        }
-
     }
     Some(moves.len())
 }
@@ -183,8 +156,6 @@ mod tests {
 
         assert_eq!(move_diagonal((2, 3), t), (2,2)); //down_mid_right
         assert_eq!(move_diagonal((2, -1), t), (2,0)); //down_mid_left
-
-
         
     }
 
@@ -204,23 +175,6 @@ mod tests {
         assert!(not_touching_not_same_row_and_col((2, -1), t)); //lower_mid_left
     }
 
-    #[test]
-    fn test_is_touching() {
-        let h: Point = (1,1);
-        let t: Point = (1,1);
-        assert!(is_touching_same_row_and_column(h, t));
-        
-        assert!(is_touching_same_row_and_column(h, (t.0 + 1, t.1))); //down
-        assert!(is_touching_same_row_and_column(h, (t.0 - 1, t.1))); //up
-        assert!(is_touching_same_row_and_column(h, (t.0, t.1 + 1))); //right
-        assert!(is_touching_same_row_and_column(h, (t.0, t.1 - 1))); //left
-
-        assert!(is_touching_same_row_and_column((h.0 + 1, h.1 + 1), (t.0 + 1, t.1 + 1))); //down-rght
-        assert!(is_touching_same_row_and_column((h.0 - 1, h.1 + 1), (t.0 - 1, t.1 + 1))); //up-right
-
-        assert!(is_touching_same_row_and_column((h.0 + 1, h.1 - 1), (t.0 + 1, t.1 - 1))); //down-left
-        assert!(is_touching_same_row_and_column((h.0 - 1, h.1 - 1), (t.0 - 1, t.1 - 1))); //up-left
-    }
     #[test]
     fn test_part_two() {
         let input = advent_of_code::read_file("examples", 9);
