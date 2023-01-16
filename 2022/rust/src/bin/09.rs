@@ -77,46 +77,37 @@ pub fn one_away_same_row_col(h: Point, t: Point) -> bool {
 
 }
 
+pub fn move_one(p: Point, direction: char) -> Point {
+    match direction {
+        'D' => (p.0, p.1 + 1),
+        'U' => (p.0, p.1 - 1),
+        'L' => (p.0 - 1, p.1),
+        'R' => (p.0 + 1, p.1),
+        _ => panic!("Unknown direction {:?}", direction)
+    }
+}
+
 pub fn part_one(input: &str) -> Option<usize> {
-    let mut global_head: Point = (0,0);
-    let mut global_tail: Point = (0,0);
+    let mut head: Point = (0,0);
+    let mut tail: Point = (0,0);
     let mut moves: HashSet<Point> = HashSet::new();
-    moves.insert(global_tail);
+    moves.insert(tail);
 
     let commands = parse_input(&input);
      
     for c in commands {
        let m = c.1.parse::<usize>().unwrap();
-       let cmd = c.0.chars().nth(0).unwrap();
-       let mut local_tail = global_tail;
+       let direction = c.0.chars().nth(0).unwrap();
        for _ in 1..=m {
-            match cmd {
-                'D' => {
-                    global_head = (global_head.0 + 1, global_head.1);
-                    local_tail = (global_tail.0 + 1, global_tail.1);
-                },
-                'U' => {
-                    global_head = (global_head.0 - 1, global_head.1);
-                    local_tail = (global_tail.0 - 1, global_tail.1);
-                },
-                'R' => {
-                    global_head = (global_head.0, global_head.1 + 1);
-                    local_tail = (global_tail.0, global_tail.1 + 1);
-                },
-                'L' => {
-                    global_head = (global_head.0, global_head.1 - 1);
-                    local_tail = (global_tail.0, global_tail.1 - 1);
-                },
-                _ => {panic!("Unknown command {:?}", c);}
-            }
-             if one_away_same_row_col(global_head, global_tail) {
-                 global_tail = local_tail; // move the global tail to the locally moved tail
-                 moves.insert(global_tail);
+             head = move_one(head, direction);
+             if one_away_same_row_col(head, tail) {
+                 tail = move_one(tail, direction); // move the global tail to the locally moved tail
+                 moves.insert(tail);
              }
 
-             if not_touching_not_same_row_and_col(global_head, global_tail) {
-                    global_tail = move_diagonal(global_head, global_tail);
-                    moves.insert(global_tail);
+             if not_touching_not_same_row_and_col(head, tail) {
+                    tail = move_diagonal(head, tail);
+                    moves.insert(tail);
              }
        }
     }
