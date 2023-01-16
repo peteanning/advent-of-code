@@ -87,11 +87,13 @@ pub fn move_one(p: Point, direction: char) -> Point {
     }
 }
 
-pub fn part_one(input: &str) -> Option<usize> {
+pub fn execute_puzzle(input: &str, len: usize) -> Option<usize>{
     let mut head: Point = (0,0);
-    let mut tail: Point = (0,0);
+    let mut tails: Vec<Point>  = vec![(0,0); len];
     let mut moves: HashSet<Point> = HashSet::new();
-    moves.insert(tail);
+    for tail in &tails {
+        moves.insert(*tail);
+    }
 
     let commands = parse_input(&input);
      
@@ -99,19 +101,25 @@ pub fn part_one(input: &str) -> Option<usize> {
        let m = c.1.parse::<usize>().unwrap();
        let direction = c.0.chars().nth(0).unwrap();
        for _ in 1..=m {
-             head = move_one(head, direction);
-             if one_away_same_row_col(head, tail) {
-                 tail = move_one(tail, direction); // move the global tail to the locally moved tail
-                 moves.insert(tail);
-             }
+           for i in 0..len {
+                 head = move_one(head, direction);
+                 if one_away_same_row_col(head, tails[i]) {
+                     tails[i] = move_one(tails[i], direction); // move the global tail to the locally moved tail
+                     moves.insert(tails[i]);
+                 }
 
-             if not_touching_not_same_row_and_col(head, tail) {
-                    tail = move_diagonal(head, tail);
-                    moves.insert(tail);
-             }
+                 if not_touching_not_same_row_and_col(head, tails[i]) {
+                        tails[i] = move_diagonal(head, tails[i]);
+                        moves.insert(tails[i]);
+                 }
+           }
        }
     }
     Some(moves.len())
+}
+
+pub fn part_one(input: &str) -> Option<usize> {
+    execute_puzzle(input, 1)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
@@ -168,7 +176,7 @@ mod tests {
 
     #[test]
     fn test_part_two() {
-        let input = advent_of_code::read_file("examples", 9);
+        let input = advent_of_code::read_file("examples", 91);
         assert_eq!(part_two(&input), None);
     }
 }
