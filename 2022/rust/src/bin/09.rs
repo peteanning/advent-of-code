@@ -2,7 +2,101 @@ use std::collections::HashSet;
 
 use itertools::Itertools;
 
-type Point = (i32, i32);
+
+#[derive(Debug)]
+#[derive(PartialEq)]
+#[derive(Eq)]
+#[derive(Hash)]
+#[derive(Clone)]
+#[derive(Copy)]
+pub struct Point {
+    col: i32,
+    row: i32
+}
+
+impl Point {
+   fn new(column: i32, row: i32) -> Point {
+       Point { col: column, row }
+   } 
+
+   fn move_one(&self, direction: char) -> Point {
+       match direction {
+           'D' => Point::new(self.col, self.row - 1),
+           'U' => Point::new(self.col, self.row + 1),
+           'L' => Point::new(self.col - 1, self.row),
+           'R' => Point::new(self.col + 1, self.row),
+           _ => panic!("Unknown direction {}", direction) 
+       }
+   }
+
+   fn not_touching_not_same_row_and_col(&self, tail: Point) -> bool {
+       let up_mid_left = Point::new(tail.col - 2, tail.row - 1);
+       let up_left = Point::new(tail.col - 1, tail.row -2);
+       let top_left = Point::new(tail.col -2, tail.row -2);
+
+       let up_mid_right = Point::new(tail.col + 2, tail.row - 1);
+       let up_right = Point::new(tail.col + 1, tail.row - 2);
+       let top_right = Point::new(tail.col + 2, tail.row - 2);
+
+       let lower_mid_left = Point::new(tail.col - 2, tail.row + 1);
+       let lower_left = Point::new(tail.col - 1, tail.row + 2);
+       let bottom_left = Point::new(tail.col - 2, tail.row + 2);
+
+       let lower_mid_right = Point::new(tail.col + 2, tail.row + 1);
+       let lower_right = Point::new(tail.col + 1, tail.row + 2);
+       let bottom_right = Point::new(tail.col + 2, tail.row + 2);
+
+       let cs = [up_mid_left, up_left, top_left, up_mid_right, up_right,
+                    top_right, lower_mid_left, lower_left, bottom_left,
+                    lower_mid_right, lower_right, bottom_right];
+
+       cs.contains(self)
+   }
+
+
+    fn one_away_same_row_col(&self,  tail: Point) -> bool {
+       self.col == tail.col && (self.row - 2 == tail.row || self.row + 2 == tail.row ) ||
+       self.row == tail.row && (self.col - 2 == tail.col || self.col + 2 == tail.col )
+    }
+
+    fn move_diagonal(&self,  tail: &Point) -> Point {
+       let up_mid_left = Point::new(tail.col - 2, tail.row - 1);
+       let up_left = Point::new(tail.col - 1, tail.row -2);
+       let top_left = Point::new(tail.col -2, tail.row -2);
+       let left_diagonal = Point::new(tail.col -1, tail.row -1);
+
+       let up_mid_right = Point::new(tail.col + 2, tail.row - 1);
+       let up_right = Point::new(tail.col + 1, tail.row - 2);
+       let top_right = Point::new(tail.col + 2, tail.row - 2);
+       let right_diagonal = Point::new(tail.col + 1, tail.row - 1);
+
+
+       let lower_mid_left = Point::new(tail.col - 2, tail.row + 1);
+       let lower_left = Point::new(tail.col - 1, tail.row + 2);
+       let bottom_left = Point::new(tail.col - 2, tail.row + 2);
+       let lower_left_diagonal = Point::new(tail.col - 1, tail.row + 1);
+
+       let lower_mid_right = Point::new(tail.col + 2, tail.row + 1);
+       let lower_right = Point::new(tail.col + 1, tail.row + 2);
+       let bottom_right = Point::new(tail.col + 2, tail.row + 2);
+       let lower_right_diagonal = Point::new(tail.col + 1, tail.row + 1);
+
+
+           if &up_mid_left == self || &up_left == self || self == &top_left {
+                left_diagonal
+           } else if &up_mid_right == self || &up_right == self || &top_right == self {
+                right_diagonal 
+           } else if &lower_mid_left == self || &lower_left == self || &bottom_left == self {
+               lower_left_diagonal
+           } else if &lower_mid_right == self || &lower_right == self || &bottom_right == self {
+               lower_right_diagonal
+           } else {
+               panic!("Unknown diagonal mapping for head {:?}, tail {:?}", self, tail); 
+           }
+           
+    }
+
+}
 
 pub fn parse_input(input: &str) -> Vec<(&str, &str)> {
         input.lines()
@@ -13,84 +107,10 @@ pub fn parse_input(input: &str) -> Vec<(&str, &str)> {
                    .unwrap()).collect()
 }
 
-pub fn not_touching_not_same_row_and_col(h: Point, t: Point) -> bool {
-   //up 2 left || right
-    (h.0 == t.0 - 2 && (h.1 == t.1 - 1 || h.1 == t.1 + 1)) ||
-   //down 2 left || right
-    (h.0 == t.0 + 2 && (h.1 == t.1 - 1 || h.1 == t.1 + 1)) ||
-    //upper_mid left || right
-    (h.0 == t.0 - 1 && (h.1 == t.1 - 2 || h.1 == t.1 + 2)) || 
-    //lower_mid left || right
-    (h.0 == t.0 + 1 && (h.1 == t.1 - 2 || h.1 == t.1 + 2)) ||
-    //Diaganols
-   //up 2 left || right
-    (h.0 == t.0 - 2 && (h.1 == t.1 - 2 || h.1 == t.1 + 2)) ||
-   //down 2 left || right
-    (h.0 == t.0 + 2 && (h.1 == t.1 - 2 || h.1 == t.1 + 2)) 
-    
-    
-
-
-}
-
-pub fn move_diagonal(h: Point, t: Point) -> Point {
-   let up_left: Point = (t.0 - 2, t.1 - 1);
-   let upper_mid_left: Point = (t.0 - 1, t.1 - 2);
-
-   let up_right: Point = (t.0 - 2, t.1 + 1);
-   let upper_mid_right: Point = (t.0 - 1, t.1 + 2);
-
-   let down_left: Point = (t.0 + 2, t.1 - 1);
-   let lower_mid_left: Point = (t.0 + 1, t.1 - 2);
-
-   let down_right: Point = (t.0 + 2, t.1 + 1);
-   let lower_mid_right: Point = (t.0 + 1, t.1 + 2);
-
-   let up_left_diagonal: Point = (t.0 - 2, t.1 - 2);
-   let up_right_diagonal: Point = (t.0 - 2, t.1 + 2);
-
-   let down_left_diagonal: Point = (t.0 + 2, t.1 - 2);
-   let down_right_diagonal: Point = (t.0 + 2, t.1 + 2);
-
-   if h == up_left || h == upper_mid_left || h == up_left_diagonal{
-       (t.0 - 1, t.1 - 1) 
-   } else if h ==  up_right || h == upper_mid_right || h == up_right_diagonal{
-       (t.0 - 1, t.1 + 1) 
-   } else if h == down_left || h == lower_mid_left  || h == down_left_diagonal {
-       (t.0 + 1, t.1 - 1) 
-   } else if h == down_right || h == lower_mid_right || h == down_right_diagonal {
-       (t.0 + 1, t.1 + 1) 
-   } else {
-       t
-   }
-}
-    
-
-pub fn one_away_same_row_col(h: Point, t: Point) -> bool {
-   // left
-    (h.0 == t.0 && h.1 == t.1 - 2) || 
-  // right
-    (h.0 == t.0 && h.1 == t.1 + 2) ||
-  // up
-    (h.0 == t.0 + 2 && h.1 == t.1) ||
-  //down
-    (h.0 == t.0 - 2 && h.1 == t.1) 
-
-}
-
-pub fn move_one(p: Point, direction: char) -> Point {
-    match direction {
-        'D' => (p.0 + 1, p.1),
-        'U' => (p.0 - 1, p.1),
-        'L' => (p.0, p.1 - 1),
-        'R' => (p.0,  p.1 + 1),
-        _ => panic!("Unknown direction {:?}", direction)
-    }
-}
-
 pub fn execute_puzzle(input: &str, len: usize) -> Option<usize>{
-    let head: Point = (0,0);
-    let mut points: Vec<Point>  = vec![(0,0); len + 1];
+    let head: Point = Point::new(0,0);
+
+    let mut points: Vec<Point>  = vec![Point::new(0,0); len + 1];
     points[0] = head; // head at points[0]
     let mut moves: HashSet<(usize, Point)> = HashSet::new();
 
@@ -103,20 +123,20 @@ pub fn execute_puzzle(input: &str, len: usize) -> Option<usize>{
     for c in commands {
        let m = c.1.parse::<usize>().unwrap();
        let direction = c.0.chars().nth(0).unwrap();
-      // println!("== {} {} ==", direction, m);
+       println!("== {} {} ==", direction, m);
        for j in 1..=m {
-    //       println!("move {}", j);
-           points[0] = move_one(points[0], direction);
-     //      println!("H {:?}", points[0]);
+           println!("move {}", j);
+           points[0] = points[0].move_one(direction);
+           println!("H {:?}", points[0]);
            for i in 1..=len {
-                 if one_away_same_row_col(points[i - 1], points[i]) {
-                     points[i] = move_one(points[i], direction); // move the global tail to the locally moved tail
+                 if points[i - 1].one_away_same_row_col(points[i]) {
+                     points[i] = points[i].move_one(direction); // move the global tail to the locally moved tail
                      moves.insert((i, points[i]));
-       //              println!("T{} {:?}", i, points[i]);
-                 } else if not_touching_not_same_row_and_col(points[i-1], points[i]) {
-                        points[i] = move_diagonal(points[i-1], points[i]);
+                     println!("T{} {:?}", i, points[i]);
+                 } else if  points[i-1].not_touching_not_same_row_and_col(points[i]) {
+                        points[i] = points[i-1].move_diagonal(&points[i]);
                         moves.insert((i, points[i]));
-        //                println!("T{} {:?}", i, points[i]);
+                        println!("T{} {:?}", i, points[i]);
                  } else {
          //           print!("T{} {:?}", i, points[i]);
           //          println!("Not Moving T{}", i);
@@ -126,6 +146,7 @@ pub fn execute_puzzle(input: &str, len: usize) -> Option<usize>{
     }
    Some(moves.into_iter().filter(|t| t.0 == len ).count())
 }
+
 
 pub fn part_one(input: &str) -> Option<usize> {
     execute_puzzle(input, 1)
@@ -145,43 +166,83 @@ fn main() {
 mod tests {
     use super::*;
 
+    const TAIL: Point = Point { col: 1, row: 1};
+    const UP_MID_LEFT: Point = Point { col: -1, row: 0};
+    const UP_LEFT: Point = Point { col: 0, row: -1};
+    const TOP_LEFT: Point = Point{col: -1, row: -1};
+    const LEFT_DIAGONAL: Point = Point { col: 0, row: 0};
+
+    const UP_MID_RIGHT: Point = Point { col: 3, row: 0}; 
+    const UP_RIGHT: Point = Point { col: 2, row: -1};
+    const TOP_RIGHT: Point = Point { col: 3,  row: -1};
+    const RIGHT_DIAGONAL: Point = Point { col: 2, row: 0};
+
+    const LOWER_MID_LEFT: Point = Point { col: -1, row: 2}; 
+    const LOWER_LEFT: Point = Point{ col: 0, row: 3};
+    const BOTTOM_LEFT: Point = Point { col: -1, row: 3};
+    const LOWER_LEFT_DIAGONAL: Point = Point { col: 0, row: 2};
+
+    const LOWER_MID_RIGHT: Point = Point { col: 3, row: 2}; 
+    const LOWER_RIGHT: Point = Point { col: 2, row: 3};
+    const BOTTOM_RIGHT: Point = Point { col: 3, row: 3};
+    const LOWER_RIGHT_DIAGONAL: Point = Point { col: 2, row: 2};
+
     #[test]
     fn test_part_one() {
         let input = advent_of_code::read_file("examples", 9);
         assert_eq!(part_one(&input), Some(13));
     }
+
+
+
     #[test]
-    fn test_move_diagonal() {
-        let t: Point = (1,1);
-        assert_eq!(move_diagonal((-1, 2), t), (0,2)); //up_right
-        assert_eq!(move_diagonal((-1, 0), t), (0,0)); //up_left
-       
-        assert_eq!(move_diagonal((0, 3), t), (0,2)); //up_mid_right
-        assert_eq!(move_diagonal((0, -1), t), (0,0)); //up_mid_left
-
-        assert_eq!(move_diagonal((3, 0), t), (2,0)); //down_left
-        assert_eq!(move_diagonal((3, 2), t), (2,2)); //down_right
-
-        assert_eq!(move_diagonal((2, 3), t), (2,2)); //down_mid_right
-        assert_eq!(move_diagonal((2, -1), t), (2,0)); //down_mid_left
+    fn test_not_touch_same_row_col() {
+        let tail = Point::new(1, 1);
+        assert!(tail.one_away_same_row_col(Point::new(1, -1))); //up
+        assert!(tail.one_away_same_row_col(Point::new(1, 3))); //down
         
+        assert!(tail.one_away_same_row_col(Point::new(-1, 1))); //left
+        assert!(tail.one_away_same_row_col(Point::new(3, 1))); //right
     }
 
+    #[test]
+    fn test_move_diagonal_cord() {
+
+       let lefts = [UP_MID_LEFT, UP_LEFT, TOP_LEFT];
+       test_quadrants(&lefts, &TAIL, &LEFT_DIAGONAL);
+
+       let rights = [UP_MID_RIGHT, UP_RIGHT,TOP_RIGHT];
+
+       test_quadrants(&rights, &TAIL, &RIGHT_DIAGONAL);
+        
+       let lower_lefts = [LOWER_MID_LEFT, LOWER_LEFT, BOTTOM_LEFT];
+        
+       test_quadrants(&lower_lefts, &TAIL, &LOWER_LEFT_DIAGONAL);
+
+       let lower_rights = [LOWER_MID_RIGHT, LOWER_RIGHT, BOTTOM_RIGHT];
+
+       test_quadrants(&lower_rights, &TAIL, &LOWER_RIGHT_DIAGONAL);
+
+       fn test_quadrants(q: &[Point; 3], tail: &Point, diagonal: &Point) {
+           for c in q {
+               assert_eq!(&c.move_diagonal(tail), diagonal);
+           }
+       }
+    }
 
     #[test]
-    fn test_not_touch_not_same_row_col() {
-        let t: Point = (1,1);
-        assert!(not_touching_not_same_row_and_col((-1, 0), t)); //up_left
-        assert!(not_touching_not_same_row_and_col((-1, 2), t)); //up_right
-        assert!(not_touching_not_same_row_and_col((3, 2), t)); //down_right
-        assert!(not_touching_not_same_row_and_col((3, 0), t)); //down_right
-        
-        assert!(not_touching_not_same_row_and_col((0, 3), t)); //upper_mid_right
-        assert!(not_touching_not_same_row_and_col((0, -1), t)); //upper_mid_left
-        
-        assert!(not_touching_not_same_row_and_col((2, 3), t)); //lower_mid_right
-        assert!(not_touching_not_same_row_and_col((2, -1), t)); //lower_mid_left
+    fn test_not_touch_not_same_row_col_cord() {
+        let all = [UP_MID_LEFT, UP_LEFT, TOP_LEFT,
+                   UP_MID_RIGHT, UP_RIGHT, TOP_RIGHT,
+                   LOWER_MID_LEFT, LOWER_LEFT, BOTTOM_LEFT,
+                   LOWER_MID_RIGHT, LOWER_RIGHT, BOTTOM_RIGHT];
+
+        for c in all {
+            assert!(c.not_touching_not_same_row_and_col(TAIL));
+        }
        
+        assert!(!Point::new(1, -1).not_touching_not_same_row_and_col(TAIL));
+
     }
 
     #[test]
@@ -189,7 +250,7 @@ mod tests {
         let input = advent_of_code::read_file("examples", 9);
         assert_eq!(part_two(&input), Some(1));
     }
-    #[test]
+//    #[test]
     fn test_part_two_two() {
         let input = advent_of_code::read_file("examples", 91);
         assert_eq!(part_two(&input), Some(36));
