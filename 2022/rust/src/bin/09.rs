@@ -59,6 +59,27 @@ impl Point {
        self.row == tail.row && (self.col - 2 == tail.col || self.col + 2 == tail.col )
     }
 
+    fn get_direction_to_move(&self,  tail: Point) -> Option<char> {
+       let up = Point::new(tail.col, tail.row + 2);
+       let down = Point::new(tail.col, tail.row - 2);
+       
+       let left = Point::new(tail.col - 2, tail.row);
+       let right = Point::new(tail.col + 2, tail.row);
+
+       if &up == self {
+           Some('U')
+       } else if &down == self {
+           Some('D')
+       } else if &left == self {
+           Some('L')
+       } else if &right == self {
+           Some('R')
+       } else {
+           None
+       }
+       
+    }
+
     fn move_diagonal(&self,  tail: &Point) -> Point {
        let up_mid_left = Point::new(tail.col - 2, tail.row - 1);
        let up_left = Point::new(tail.col - 1, tail.row -2);
@@ -107,7 +128,7 @@ pub fn parse_input(input: &str) -> Vec<(&str, &str)> {
                    .unwrap()).collect()
 }
 
-pub fn execute_puzzle(input: &str, len: usize) -> Option<usize>{
+pub fn execute_puzzle(input: &str, len: usize, two: bool) -> Option<usize>{
     let head: Point = Point::new(0,0);
 
     let mut points: Vec<Point>  = vec![Point::new(0,0); len + 1];
@@ -123,20 +144,24 @@ pub fn execute_puzzle(input: &str, len: usize) -> Option<usize>{
     for c in commands {
        let m = c.1.parse::<usize>().unwrap();
        let direction = c.0.chars().nth(0).unwrap();
-       println!("== {} {} ==", direction, m);
+       //println!("== {} {} ==", direction, m);
        for j in 1..=m {
-           println!("move {}", j);
+           //println!("move {}", j);
            points[0] = points[0].move_one(direction);
-           println!("H {:?}", points[0]);
+           //println!("H {:?}", points[0]);
            for i in 1..=len {
+                 let _direction = points[i - 1].get_direction_to_move(points[i]); 
+                 
+
                  if points[i - 1].one_away_same_row_col(points[i]) {
-                     points[i] = points[i].move_one(direction); // move the global tail to the locally moved tail
+                     //println!("Direction is {} calculated direct is {:?}", direction, _direction);
+                     points[i] = points[i].move_one(_direction.unwrap()); // move the global tail to the locally moved tail
                      moves.insert((i, points[i]));
-                     println!("T{} {:?}", i, points[i]);
+                     //println!("T{} {:?} m1", i, points[i]);
                  } else if  points[i-1].not_touching_not_same_row_and_col(points[i]) {
                         points[i] = points[i-1].move_diagonal(&points[i]);
                         moves.insert((i, points[i]));
-                        println!("T{} {:?}", i, points[i]);
+                        //println!("T{} {:?} md", i, points[i]);
                  } else {
          //           print!("T{} {:?}", i, points[i]);
           //          println!("Not Moving T{}", i);
@@ -149,11 +174,11 @@ pub fn execute_puzzle(input: &str, len: usize) -> Option<usize>{
 
 
 pub fn part_one(input: &str) -> Option<usize> {
-    execute_puzzle(input, 1)
+    execute_puzzle(input, 1, false)
 }
 
 pub fn part_two(input: &str) -> Option<usize> {
-    execute_puzzle(input, 9)
+    execute_puzzle(input, 9, true)
 }
 
 fn main() {
@@ -231,6 +256,15 @@ mod tests {
     }
 
     #[test]
+    fn test_get_direction() {
+        let head = Point::new(1, 1);
+        assert_eq!(head.get_direction_to_move(Point::new(1, -1)).unwrap(), 'U');
+        assert_eq!(head.get_direction_to_move(Point::new(1, 3)).unwrap(), 'D');
+        
+        assert_eq!(head.get_direction_to_move(Point::new(3, 1)).unwrap(), 'L');
+        assert_eq!(head.get_direction_to_move(Point::new(-1, 1)).unwrap(), 'R');
+    }
+    #[test]
     fn test_not_touch_not_same_row_col_cord() {
         let all = [UP_MID_LEFT, UP_LEFT, TOP_LEFT,
                    UP_MID_RIGHT, UP_RIGHT, TOP_RIGHT,
@@ -250,7 +284,7 @@ mod tests {
         let input = advent_of_code::read_file("examples", 9);
         assert_eq!(part_two(&input), Some(1));
     }
-//    #[test]
+    #[test]
     fn test_part_two_two() {
         let input = advent_of_code::read_file("examples", 91);
         assert_eq!(part_two(&input), Some(36));
